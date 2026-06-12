@@ -1,5 +1,7 @@
 # Enclosure and mounting
 
+> **Early draft — being validated.** Some dimensions and component specs in this guide are being checked against real hardware (#498). Treat sizing recommendations as provisional until this notice is removed.
+
 The sensor needs to be weatherproof and aimed straight down at the water surface. Here's what works.
 
 ## Choosing an enclosure
