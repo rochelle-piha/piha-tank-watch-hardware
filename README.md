@@ -1,6 +1,10 @@
 # Piha Tank Watch — Hardware
 
-Open-source firmware and documentation for the Piha Tank Watch ESP32-C3 sensor.
+**Piha Tank Watch** keeps an eye on your rainwater tank and shows you how much water you have — right from your phone — so you know when you're getting low without climbing up to check. It's built for New Zealand rural and lifestyle properties that rely on tank water.
+
+🌐 **Learn more: [pihatankwatch.nz](https://pihatankwatch.nz)**
+
+This repository is the **open-source hardware and firmware** for the sensor — for DIY builders who'd rather make their own. Everything you need to build and flash a unit is below.
 
 ## Hardware required
 
