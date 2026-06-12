@@ -23,9 +23,11 @@ ECHO (blue)  ───── GPIO5
 > **Power the sensor from 3.3 V, not 5 V.** The ESP32-C3's GPIOs are only rated
 > to ~3.6 V, but the JSN-SR04T's `ECHO` output sits at its supply voltage — so a
 > 5 V supply would drive 5 V into `GPIO5`, over the pin's limit. Running the
-> sensor at 3.3 V keeps `ECHO` safe with no extra parts, and the reference build
-> works fine this way. The USB-C supply still powers the board at 5 V; the sensor
-> just taps the board's regulated 3V3 pin.
+> sensor at 3.3 V keeps `ECHO` safe with no extra parts. The project's reference
+> tanks run the JSN-SR04T at 3.3 V; note that JSN-SR04T board revisions vary
+> (some are 5 V-oriented), so confirm yours reads correctly at 3.3 V — and if the
+> range is short, use the 5 V path below. The USB-C supply still powers the board
+> at 5 V; the sensor just taps the board's regulated 3V3 pin.
 >
 > **Need more range (a deep tank)?** The JSN-SR04T reaches a little further at
 > 5 V. If 3.3 V isn't enough for your depth, power it from 5 V instead and
