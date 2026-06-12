@@ -14,11 +14,24 @@
 ```
 JSN-SR04T          ESP32-C3 SuperMini
 ─────────          ──────────────────
-VCC  (red)   ───── 5V  (or VIN)
+VCC  (red)   ───── 3V3   (the 3.3 V pin — see note)
 GND  (black) ───── GND
 TRIG (yellow)───── GPIO4
 ECHO (blue)  ───── GPIO5
 ```
+
+> **Power the sensor from 3.3 V, not 5 V.** The ESP32-C3's GPIOs are only rated
+> to ~3.6 V, but the JSN-SR04T's `ECHO` output sits at its supply voltage — so a
+> 5 V supply would drive 5 V into `GPIO5`, over the pin's limit. Running the
+> sensor at 3.3 V keeps `ECHO` safe with no extra parts, and the reference build
+> works fine this way. The USB-C supply still powers the board at 5 V; the sensor
+> just taps the board's regulated 3V3 pin.
+>
+> **Need more range (a deep tank)?** The JSN-SR04T reaches a little further at
+> 5 V. If 3.3 V isn't enough for your depth, power it from 5 V instead and
+> protect `GPIO5` — either a resistor divider on `ECHO` (e.g. 1 kΩ from ECHO to
+> GPIO5, 2 kΩ from GPIO5 to GND) or a small logic-level step-down. Don't feed 5 V
+> straight into the GPIO.
 
 The JSN-SR04T sensor module has a cable that exits from the back. The other
 end of the cable has four bare wires. The waterproof transducer head is
