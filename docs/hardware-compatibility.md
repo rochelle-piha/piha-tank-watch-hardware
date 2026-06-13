@@ -18,7 +18,7 @@ Legend:
 
 | Board | Status | Notes |
 |-------|--------|-------|
-| **ESP32-C3 SuperMini** | **Supported** (reference) | The default build. Flash FQBN `esp32:esp32:esp32c3`. Pins: TRIG GPIO4, ECHO GPIO5, BOOT GPIO9. |
+| **ESP32-C3 SuperMini** | **Supported** (reference) | The default build. Flash FQBN `esp32:esp32:esp32c3:CDCOnBoot=cdc` (the `CDCOnBoot=cdc` routes Serial to the C3's native USB — without it the serial monitor is silent on a SuperMini; see [flashing.md](flashing.md)). Pins: TRIG GPIO4, ECHO GPIO5, BOOT GPIO9. |
 | ESP32 DevKit / WROOM | **Adaptable** | Select `BOARD_ESP32_DEVKIT` in `config.h`, flash with `FQBN=esp32:esp32:esp32`. BOOT button is GPIO0. |
 | ESP32-S3 DevKit | **Adaptable** | Select `BOARD_ESP32S3`, flash with `FQBN=esp32:esp32:esp32s3`. |
 | Other ESP32 (C6, etc.) | **Adaptable** | Same Arduino-ESP32 core — set your pins in `config.h` and pass the right FQBN. Confirm pins against the board's pinout (avoid input-only / strapping pins for TRIG). |

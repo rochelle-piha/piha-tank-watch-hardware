@@ -81,9 +81,15 @@ arduino-cli board list
 Then compile and upload, replacing `PORT` with the detected port:
 
 ```bash
-arduino-cli compile --fqbn esp32:esp32:esp32c3 firmware/water_level
-arduino-cli upload  --fqbn esp32:esp32:esp32c3 --port PORT firmware/water_level
+arduino-cli compile --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc firmware/water_level
+arduino-cli upload  --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc --port PORT firmware/water_level
 ```
+
+> **Keep the `:CDCOnBoot=cdc` on the FQBN.** The bare `esp32:esp32:esp32c3`
+> FQBN defaults `CDCOnBoot=Disabled`, which routes `Serial` to the UART pins
+> instead of the C3's native USB — so on a SuperMini the **serial monitor stays
+> silent over USB** and the device looks dead when it isn't. The helper scripts
+> (`flash.sh`/`flash_test.sh`) already set this; match it here.
 
 ## After flashing
 
