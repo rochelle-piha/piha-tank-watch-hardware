@@ -9,7 +9,7 @@ The sensor needs to be weatherproof and aimed straight down at the water surface
 Use an **IP65-rated ABS enclosure** sized to fit the ESP32 board plus cable slack. The JSN-SR04T transducer lives *outside* the box — it points down through a hole in the lid. The electronics (ESP32 + USB power wiring) stay inside, sealed.
 
 What to look for:
-- External dimensions around 100 × 68 × 50 mm fits the ESP32-C3 SuperMini with room to spare.
+- External dimensions around **100 × 68 × 50 mm** fits the USB build (ESP32-C3 SuperMini **and** the JSN-SR04T control board, plus the M12 cable gland and coiled sensor-cable slack). **A power bank will not fit alongside both boards** — for battery installs, mount the bank externally or step up to ~150 × 100 × 70 mm.
 - A removable lid (four screws) makes it easy to re-flash or rewire.
 - Wall-mount flanges if you need to attach it to a bracket rather than the tank lid directly.
 

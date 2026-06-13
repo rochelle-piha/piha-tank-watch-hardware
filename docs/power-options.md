@@ -16,9 +16,9 @@ Fine for days, not months. At ~80 mA continuous, a 10,000 mAh bank lasts roughly
 
 Can work if the panel and charge controller maintain a stable 5 V USB output through NZ winters. The always-on draw is the constraint — a small panel (~5 W) may not keep up through overcast periods without a buffer battery. We have **not bench-validated a solar build**; if you try it, you're the test pilot.
 
-## Deep sleep (not yet available)
+## Deep sleep (not yet recommended)
 
-Deep sleep between readings would dramatically extend battery and solar life and is on the roadmap. **It is not implemented in the current firmware** — the device stays on between readings for now. Battery and solar builds are therefore not recommended for long-term use until deep sleep lands.
+Deep sleep between readings would dramatically extend battery and solar life. **It is available in the firmware but not yet validated on battery hardware** — enabling it is not recommended until bench validation is complete. Battery and solar builds are therefore not recommended for long-term use until deep sleep is validated.
 
 ---
 

@@ -20,6 +20,8 @@ TRIG (yellow)───── GPIO4
 ECHO (blue)  ───── GPIO5
 ```
 
+> ⚠ **ECHO line — bench verification pending (#498):** In standard trig/echo mode the JSN-SR04T's ECHO output is nominally 5 V logic. The ESP32-C3 GPIO5 is a 3.3 V input and may not be 5 V-tolerant — a direct connection is out of spec. This wiring has **not yet been verified on physical hardware**. Before building, confirm your JSN-SR04T variant outputs 3.3 V on ECHO, or add a voltage divider or level-shifter on the ECHO line. This notice will be removed once the reference build is bench-tested.
+
 The JSN-SR04T sensor module has a cable that exits from the back. The other
 end of the cable has four bare wires. The waterproof transducer head is
 permanently attached to the module via a cable — do not modify this.
