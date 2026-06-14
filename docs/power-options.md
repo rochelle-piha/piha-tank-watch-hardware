@@ -4,7 +4,7 @@ The reference build is powered by USB (5 V) and draws roughly 80 mA while runnin
 
 ## Mains USB adapter
 
-The simple answer. Any 5 V USB-A adapter; use a weatherproof outdoor outlet or run the cable through conduit. This is the recommended setup for permanent installs.
+The simple answer. Any 5 V USB charger works; the ESP32-C3 SuperMini has a **USB-C** port, so use a USB-C cable (or a USB-A→USB-C cable from an older USB-A charger). Use a weatherproof outdoor outlet or run the cable through conduit. This is the recommended setup for permanent installs.
 
 ## USB power bank
 
