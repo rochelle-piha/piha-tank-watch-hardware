@@ -36,6 +36,7 @@ credentials or API keys needed before install. WiFi is provisioned via captive p
 
 - [arduino-cli](https://arduino.github.io/arduino-cli/latest/installation/) >= 0.35
 - ESP32 Arduino core >= 3.0
+- ArduinoJson library
 
 ### Quick start
 
