@@ -20,8 +20,12 @@ Typical build cost: **$30–60 NZD**. Parts available from Jaycar, PB Tech, or A
 
 ## Docs
 
-- [Wiring diagram](docs/wiring.md) — pin assignments and mounting notes
+- [Wiring diagram](docs/wiring.md) — safe pin assignments and sensor wiring
+- [Enclosure and mounting](docs/enclosure-and-mounting.md) — weatherproof box, cable gland, and mounting position
+- [Power options](docs/power-options.md) — USB, power bank, and solar/battery notes
 - [Firmware & flashing guide](docs/flashing.md) — prerequisites and step-by-step flashing
+- [Hardware compatibility](docs/hardware-compatibility.md) — supported boards, sensors, transports, and cadence
+- [LoRa long-range variant](docs/lora-variant.md) — DIY-experimental radio relay notes
 
 ## Full build guide
 
