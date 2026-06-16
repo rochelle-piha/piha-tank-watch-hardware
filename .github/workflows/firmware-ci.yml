@@ -1,0 +1,54 @@
+name: Firmware CI
+
+on:
+  pull_request:
+    paths:
+      - "firmware/**"
+      - ".github/workflows/firmware-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "firmware/**"
+      - ".github/workflows/firmware-ci.yml"
+
+jobs:
+  host-tests:
+    name: Host tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build and run host tests
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ptw-firmware-host-tests
+          for test in firmware/host_tests/test_*.cpp; do
+            bin="/tmp/ptw-firmware-host-tests/$(basename "$test" .cpp)"
+            g++ -std=c++17 -Wall -Wextra -Werror "$test" -o "$bin"
+            "$bin"
+          done
+
+  esp32-compile:
+    name: ESP32-C3 compile
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install ESP32 platform
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
+
+      - name: Compile reference firmware
+        run: |
+          arduino-cli compile \
+            --fqbn "esp32:esp32:esp32c3:CDCOnBoot=cdc" \
+            firmware/water_level
