@@ -1,11 +1,11 @@
 #pragma once
-// logic.h — pure firmware logic, host-testable (#339).
+// logic.h — pure firmware logic, host-testable.
 //
 // NO Arduino includes, NO globals, NO I/O (standard C headers only). Everything
 // here compiles standalone with `g++ -Wall -Wextra -Werror` and is pinned by
-// firmware/host_tests/ on every firmware/** PR — so regressions in the maths
-// that decide what a device reports (and how often) fail CI on the host in
-// seconds, without a bench or the ESP32 toolchain.
+// firmware/host_tests/ — so regressions in the maths that decide what a device
+// reports (and how often) fail local checks on the host in seconds, without a
+// bench or the ESP32 toolchain.
 
 #include <math.h>  // roundf — present on both host and Arduino
 //
@@ -14,7 +14,7 @@
 // the decisions to these functions. Keep it that way: anything added here must
 // stay pure.
 
-// ── Median reading (#190) ─────────────────────────────────────────────────────
+// ── Median reading ────────────────────────────────────────────────────────────
 //
 // From `count` raw pings, keep the plausible ones (strictly inside (lo, hi)),
 // and return the median — robust to the outliers a single ultrasonic ping picks
@@ -44,7 +44,7 @@ inline bool ptw_median_reading(const float* pings, int count, int min_valid,
   return true;
 }
 
-// ── Sensor acquisition (HAL-injected, host-testable) (#190 / #325) ────────────
+// ── Sensor acquisition (HAL-injected, host-testable) ─────────────────────────
 //
 // Echo pulse width (µs, from pulseIn) → distance in cm. us <= 0 means the pulse
 // never returned (sensor timeout / no echo) → -1 sentinel, which the median's
@@ -55,11 +55,11 @@ inline float ptw_distance_from_echo_us(long us) {
 }
 
 // Acquire one reading: pull `count` raw pings from `next_ping` then take the
-// median of the in-range ones (#190). `next_ping` IS the HAL seam — the .ino
+// median of the in-range ones. `next_ping` IS the HAL seam — the .ino
 // passes a lambda doing readDistance()+settle-delay; host tests pass a canned
 // echo sequence — so the full collect→median flow (incl. the all-invalid /
 // too-few-valid failure paths) runs through the *same code the device runs*,
-// on g++ in milliseconds, no bench (#325). Returns false when too few pings
+// on g++ in milliseconds, no bench. Returns false when too few pings
 // are plausible. Templated on the ping source (same injection pattern as the
 // payload builder); `count` capped at 16 to bound the stack buffer.
 template <typename NextPing>
@@ -71,12 +71,12 @@ inline bool ptw_acquire_reading(NextPing next_ping, int count, int min_valid,
   return ptw_median_reading(pings, count, min_valid, lo, hi, out);
 }
 
-// ── Claim portal readiness (#596 / captive-portal 401) ───────────────────────
+// ── Claim portal readiness ───────────────────────────────────────────────────
 //
 // The captive portal must not call /devices/send-otp before the device has a
 // server-side bootstrap record. /devices/send-otp is intentionally
-// device-authenticated and returns 401 when _authenticate_device cannot find the
-// record; that is correct backend behavior, but it is a bad onboarding order.
+// device-authenticated and returns 401 when the server cannot find the record;
+// that is correct server behavior, but it is a bad onboarding order.
 //
 // Keep the decision pure so the WebServer callbacks only own side effects:
 //   - disconnected: keep showing the WiFi wait path
@@ -84,7 +84,7 @@ inline bool ptw_acquire_reading(NextPing next_ping, int count, int min_valid,
 //   - connected and registered: it is safe to expose the claim email flow
 //
 // Scope: this closes the first-setup race where g_registered=false and the
-// portal can be used before auto-register has created the backend record. A
+// portal can be used before auto-register has created the server record. A
 // stale local g_registered=true with a missing server record is the existing
 // server-record-loss/self-heal case; it is not broadened here because this gate
 // has no safe local proof of server state without making the authenticated call.
@@ -100,11 +100,11 @@ inline PtwClaimGate ptw_claim_gate(bool wifi_connected, bool registered) {
   return PTW_CLAIM_ALLOW;
 }
 
-// ── Reading payload assembly (#111 / #273 — the device's wire contract) ──────
+// ── Reading payload assembly ─────────────────────────────────────────────────
 //
 // Which fields a reading POST carries, with what names, types, rounding and
-// presence rules — the exact contract the backend's `_extract_telemetry`
-// ingests. Templated on the document type so the .ino passes the real
+// presence rules — the exact contract the API ingests. Templated on the document
+// type so the .ino passes the real
 // ArduinoJson `JsonDocument` while host tests pass a tiny fake recorder —
 // the contract under test is OURS (fields/values/rules), not the serializer's.
 //
@@ -153,7 +153,7 @@ inline int ptw_battery_pct(float v, float full_v, float empty_v) {
   return (int)roundf(pct);
 }
 
-// ── Sleep duration for the next cycle (#188) ──────────────────────────────────
+// ── Sleep duration for the next cycle ────────────────────────────────────────
 //
 // A successful report sleeps the full server-driven interval; a failed cycle
 // (sensor read failed, or the transport never reached the server) retries
@@ -166,27 +166,27 @@ inline unsigned long ptw_sleep_duration_ms(bool success, unsigned long interval_
   return interval_ms < retry_cap_ms ? interval_ms : retry_cap_ms;
 }
 
-// ── Server-driven interval clamp (#207 / #42) ─────────────────────────────────
+// ── Server-driven interval clamp ─────────────────────────────────────────────
 //
-// The backend returns `next_interval_secs` per plan tier on every /reading
+// The API returns `next_interval_secs` per plan tier on every /reading
 // response. Clamp it to [30 s, 24 h] and convert to milliseconds.
 // Returns 0 when `secs` is missing/invalid (<= 0) — caller keeps the current
-// cadence. A regression here is either the #42 cost cliff (interval collapses)
-// or a dead device (interval explodes), so the bounds are pinned by host tests.
+// cadence. The bounds prevent both overly chatty reporting and excessively long
+// silence, and are pinned by host tests.
 inline unsigned long ptw_clamp_interval_ms(long secs) {
   if (secs <= 0) return 0;            // field missing/invalid — keep current cadence
-  if (secs < 30)    secs = 30;        // never faster than the backend's 30s floor
+  if (secs < 30)    secs = 30;        // never faster than the API's 30s floor
   if (secs > 86400) secs = 86400;     // never slower than once a day
   return (unsigned long)secs * 1000UL;
 }
 
-// ── TLS clock-readiness gate (#189) ───────────────────────────────────────────
+// ── TLS clock-readiness gate ─────────────────────────────────────────────────
 //
 // TLS validates the server cert's notBefore/notAfter against the device clock.
 // The ESP32 boots at epoch 0 (1970), so a handshake before SNTP has synced the
 // clock hard-fails "certificate is not yet valid" *even with the correct CA* —
-// the #1 thing that makes a naive setCACert "work on the bench, fail in the
-// field". So every HTTPS call is gated on this: only attempt TLS once the clock
+// a common reason naive TLS validation works on the bench but fails in the
+// field. So every HTTPS call is gated on this: only attempt TLS once the clock
 // is past a sane floor (2020-01-01 UTC). Below it the caller FAILS CLOSED — it
 // does not fall back to an unvalidated connection. Pure + host-tested so the
 // fail-closed boundary (the exact epoch where we start trusting the clock) can't
@@ -196,34 +196,33 @@ inline bool ptw_clock_is_plausible(long epoch_secs) {
   return epoch_secs >= 1577836800L;  // 2020-01-01T00:00:00Z
 }
 
-// ── POST /reading response handling (#325 / #207 / #188) ──────────────────────
+// ── POST /reading response handling ──────────────────────────────────────────
 //
 // transportReport()'s two branch decisions, lifted out pure so they're host-
-// testable without a bench or a live API — completing the #325 "test the
-// transport, not just the payload" goal. The HAL half (the actual POST + JSON
+// testable without a bench or a live API. The HAL half (the actual POST + JSON
 // parse) stays in the .ino; these are the *decisions* that, if they regressed,
 // would silently break cadence or retry behaviour with no compile/E2E signal.
 
 // Did an HTTP response arrive at all? <= 0 means the transport never reached the
 // server (no WiFi / connect or TLS-handshake failure — beginSecure failing closed
-// shows up here too). Drives the #188 retry: a cycle that never reached the server
+// shows up here too). Drives the retry: a cycle that never reached the server
 // retries sooner instead of sleeping a full (free-tier, up-to-24h) interval.
 inline bool ptw_server_reached(int http_status) { return http_status > 0; }
 
-// Does this response carry a `next_interval_secs` we must honor? The backend
+// Does this response carry a `next_interval_secs` we must honor? The API
 // sends the per-tier cadence on BOTH the 200 accept AND the 429 rate-limit reply,
-// so 429 must honor it too — dropping it there re-opens the #42 cost cliff (a
-// rate-limited device keeps hammering at the old cadence after being told to back
-// off). 422 (not assigned) / other errors carry no interval → leave cadence as-is.
+// so 429 must honor it too; otherwise a rate-limited device keeps reporting at
+// the old cadence after being told to back off. 422 (not assigned) / other errors
+// carry no interval → leave cadence as-is.
 inline bool ptw_response_has_interval(int http_status) {
   return http_status == 200 || http_status == 429;
 }
 
 // Did this whole report cycle SUCCEED — i.e. should we sleep the full interval
-// rather than the short retry cap (#188/#410/#426)? Two signals must BOTH hold:
+// rather than the short retry cap? Two signals must BOTH hold:
 //   server_reached — the POST got an HTTP response at all (ptw_server_reached)
 //   registered     — the device has a server-side record (g_registered)
-// The subtlety this pins (the #426 bug): "reached the server" is NOT "succeeded".
+// The subtlety this pins: "reached the server" is NOT "succeeded".
 // An UNregistered device's /reading is answered with 401 — a real HTTP response,
 // so ptw_server_reached() is true — but nothing was stored. If we treated that as
 // success we'd sleep the full (free-tier, up-to-24h) interval, so autoRegister()
@@ -232,24 +231,24 @@ inline bool ptw_response_has_interval(int http_status) {
 // registration every few minutes until it sticks. A registered device that gets a
 // persistent 401 (revoked) stays "ok" and backs off the full interval on purpose —
 // it shouldn't hammer 401s. Pure + host-tested so this composition can't silently
-// regress to `ok = transportReport(...)` again (which is how #426 slipped in).
+// regress to `ok = transportReport(...)` again.
 inline bool ptw_report_cycle_ok(bool server_reached, bool registered) {
   return server_reached && registered;
 }
 
-// ── Self-recovery from persistent /reading 401 (#574) ─────────────────────────
+// ── Self-recovery from persistent /reading 401 ───────────────────────────────
 //
 // ptw_report_cycle_ok(true, true) returns true when a registered device gets a
 // 401 — because g_registered=true in NVS but the server lost the record.  That
 // cycle looks ok so the device sleeps the full interval; autoRegister() never
-// retries; the device is silently dark forever — the #574 brick class.
+// retries; the device is silently dark forever.
 //
 // Recovery layer: track consecutive /reading 401s while the device believes it
 // is registered.  After N consecutive, make ONE re-registration attempt:
 //   - autoRegister() succeeds → server had no record (genuine loss); confirmed
 //     by the next /reading returning 200.
 //   - autoRegister() fails → server explicitly refused (tombstone for revocation,
-//     #538 clone/hash-mismatch) → slow-probe cadence, not hammering.
+//     clone/hash-mismatch) → slow-probe cadence, not hammering.
 //
 // Both predicates are pure; the .ino owns the counters and the NVS state.
 
@@ -274,7 +273,7 @@ inline bool ptw_use_slow_backoff(bool recovery_attempted, bool server_reached, b
   return recovery_attempted && server_reached && !registered;
 }
 
-// ── Device id from the eFuse MAC (#412) ───────────────────────────────────────
+// ── Device id from the eFuse MAC ─────────────────────────────────────────────
 // The original id was 4 random bytes — a 32-bit space whose birthday-bound
 // collision climbs to ~50% near 77k devices, and a collision SILENTLY BRICKS the
 // loser (its locally-generated secret never matches the first device's stored
@@ -287,8 +286,7 @@ inline bool ptw_use_slow_backoff(bool recovery_attempted, bool server_reached, b
 // device re-derives the same id but a FRESH secret, and auto-register is a no-op
 // on an existing id (the server keeps the old api_key_hash) → it 401s. So a wipe
 // still orphans, same as today. True wipe-recovery needs a server-side re-key
-// while the record is UNCLAIMED — a #412 follow-up, deliberately NOT in scope
-// here (QE/Web traced this against routes_auth.py).
+// while the record is UNCLAIMED — a follow-up, deliberately NOT in scope here.
 //
 // Writes 12 lowercase hex chars + NUL into `out` (matching hexStr's casing).
 // Pure + Arduino-free so host tests pin it; the eFuse read is the .ino's HAL seam.
@@ -301,7 +299,7 @@ inline void ptw_device_id_from_mac(const unsigned char mac[6], char out[13]) {
   out[12] = '\0';
 }
 
-// ── OTA confirmed-boot gate (#539) ────────────────────────────────────────────
+// ── OTA confirmed-boot gate ─────────────────────────────────────────────────
 //
 // When an OTA image first boots it is PENDING: the bootloader will auto-revert to
 // the previous (known-good) slot on the next reset UNLESS the running app actively
@@ -311,11 +309,10 @@ inline void ptw_device_id_from_mac(const unsigned char mac[6], char out[13]) {
 // slot. So "mark valid" must mean "this image has PROVEN it works in the field" —
 // not "this image reached main()". If we mark valid early and the image is actually
 // broken (can't reach the server, bad cert, wedged sensor loop that still pings),
-// we'd both cancel the safety rollback AND burn the counter past the good slot →
-// a fielded brick on a *signed, legitimate* update (the QE/#539 deadlock).
+// we'd both cancel the safety rollback AND burn the counter past the good slot.
 //
 // The proof we require is the one we already trust everywhere else: a full report
-// cycle — ptw_report_cycle_ok (#426): clock synced (#189) → TLS handshake → device
+// cycle — ptw_report_cycle_ok: clock synced → TLS handshake → device
 // registered → a /reading the server accepted. If the fresh image can do that, it
 // is by definition healthy on this exact unit + network, so we mark valid (and only
 // then let the counter advance). If it can't within `max_boots` attempts, we force a

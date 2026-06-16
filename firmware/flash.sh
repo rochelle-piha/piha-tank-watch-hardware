@@ -4,7 +4,7 @@ set -euo pipefail
 SKETCH="$(dirname "$0")/water_level"
 # CDCOnBoot=cdc routes Serial to the C3's NATIVE USB. Without it the C3 FQBN
 # defaults CDCOnBoot=Disabled → Serial goes to the UART pins, so on a SuperMini
-# (no UART adapter) the USB serial monitor shows NOTHING (#189 bench finding).
+# (no UART adapter) the USB serial monitor shows nothing.
 # Override for non-C3 boards, e.g. FQBN=esp32:esp32:esp32 bash firmware/flash.sh
 # (must match the BOARD_* preset selected in water_level/config.h); a classic
 # ESP32 has no native USB, so don't carry CDCOnBoot on that FQBN.

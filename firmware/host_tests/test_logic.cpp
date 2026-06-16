@@ -1,8 +1,8 @@
-// test_logic.cpp — host-side unit tests for firmware/water_level/logic.h (#339).
+// test_logic.cpp — host-side unit tests for firmware/water_level/logic.h.
 //
 // Plain C++, no framework, no Arduino: build + run with
 //   g++ -std=c++17 -Wall -Wextra -Werror -o t firmware/host_tests/test_logic.cpp && ./t
-// Exit code is non-zero on any failure (gates the CI job in firmware.yml).
+// Exit code is non-zero on any failure.
 
 #include "../water_level/logic.h"
 
@@ -126,7 +126,7 @@ static void test_clamp() {
   for (const auto& c : cases) CHECK(c.name, ptw_clamp_interval_ms(c.secs) == c.want_ms);
 }
 
-// ── ptw_sleep_duration_ms (#188) ──────────────────────────────────────────────
+// ── ptw_sleep_duration_ms ────────────────────────────────────────────────────
 
 static void test_sleep_duration() {
   const unsigned long CAP = 300000UL;            // 5 min retry cap (config default)
@@ -144,7 +144,7 @@ static void test_sleep_duration() {
     CHECK(c.name, ptw_sleep_duration_ms(c.ok, c.interval, CAP) == c.want);
 }
 
-// ── ptw_device_id_from_mac (#412) ─────────────────────────────────────────────
+// ── ptw_device_id_from_mac ───────────────────────────────────────────────────
 
 static void test_device_id_from_mac() {
   char id[13];
@@ -175,7 +175,7 @@ static void test_device_id_from_mac() {
   }
 }
 
-// ── ptw_ota_* confirmed-boot gate (#539) ──────────────────────────────────────
+// ── ptw_ota_* confirmed-boot gate ────────────────────────────────────────────
 
 static void test_ota_gate() {
   // mark-valid is gated SOLELY on a real report cycle — the brick-or-not boundary.
@@ -183,7 +183,7 @@ static void test_ota_gate() {
   CHECK("ota: failed report cycle → stay pending (NOT valid)",
         !ptw_ota_should_mark_valid(false));
 
-  // The QE/#539 deadlock row, pinned: a failed boot must NOT mark valid — which is
+  // A failed boot must NOT mark valid — which is
   // what keeps the anti-rollback eFuse counter from advancing past the good slot.
   // (mark-valid false ⇒ the .ino never calls mark_app_valid ⇒ counter unchanged.)
   CHECK("ota: failed boot does not self-validate (counter cannot advance)",

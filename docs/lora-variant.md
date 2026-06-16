@@ -29,20 +29,20 @@ network server needed — it's just two radios talking to each other.
 The reading loop is built around an **acquire↔transport seam**. `loop()` is:
 
 ```cpp
-autoRegister();              // #410 self-heal: re-registers over WiFi/HTTPS each cycle until
+autoRegister();              // Self-heal: re-registers over WiFi/HTTPS each cycle until
                              //   the server has a record. WiFi-dependent — REMOVE on a no-WiFi
                              //   tank unit (see "What you change" below).
 Reading r;
 if (acquireReading(r)) {     // sensor → Reading{ distance_cm }  — unchanged for LoRa
   // transportReport() returns whether the server was *reached*; loop() ANDs that with
-  // g_registered (ptw_report_cycle_ok, #426) to choose the sleep interval. THIS is the seam you swap.
+  // g_registered (ptw_report_cycle_ok) to choose the sleep interval. THIS is the seam you swap.
   bool ok = ptw_report_cycle_ok(transportReport(r), g_registered);
 }
 // ... wait g_intervalMs ...  // cadence — unchanged for LoRa
 ```
 
 Two calls touch the network: **`transportReport()`** (the reading POST) and the per-cycle
-**`autoRegister()`** self-heal (#410). Everything else — acquisition, the median filter, the
+**`autoRegister()`** self-heal. Everything else — acquisition, the median filter, the
 cadence wait loop, the board/pin config, and (on the receiver) the captive-portal WiFi
 provisioning — stays exactly as it is. So a LoRa build is a **contained swap of the transport
 (plus dropping the WiFi-only registration calls) and a small receiver sketch** — not a fork of
@@ -74,7 +74,7 @@ A tank unit that only transmits has **no WiFi**, so drop the WiFi-only calls and
 **receiver** do the device registration/linking against the API:
 
 - remove `setupWiFi()` and `autoRegister()` from `setup()`, **and**
-- remove the `autoRegister()` at the top of `loop()` (the #410 self-heal — it does a WiFi/HTTPS
+- remove the `autoRegister()` at the top of `loop()` (the self-heal — it does a WiFi/HTTPS
   registration every cycle, which can't work on a radio-only unit), **and**
 - since the tank unit never registers against the API itself, drop the `ptw_report_cycle_ok(…, g_registered)`
   wrapping in `loop()` too — there's no 401-vs-success distinction to make over a fire-and-forget radio.
@@ -93,8 +93,8 @@ then in `loop()` receive a LoRa packet and forward it to the **unchanged** `/rea
 //   http.POST("{\"distance_cm\": <value>}");
 ```
 
-The backend authenticates on `device_id:secret` and doesn't care whether the POST came from the
-tank unit or a proxy — so no backend change is needed.
+The API authenticates on `device_id:secret` and doesn't care whether the POST came from the
+tank unit or a proxy — so no server change is needed.
 
 ## Honest limitations (read before you build)
 

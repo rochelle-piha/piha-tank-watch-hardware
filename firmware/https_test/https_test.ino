@@ -1,4 +1,4 @@
-// https_test.ino — TLS cert-validation bench harness (#189 Phase B).
+// https_test.ino — TLS cert-validation bench harness.
 //
 // Flash this on a device on the bench to PROVE the firmware's TLS validation is
 // genuinely on before trusting it on a customer's network. It is self-contained
@@ -187,7 +187,7 @@ static int probe(const char* label, const char* caCert, bool expectReachable) {
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("\n=== TLS cert-validation bench harness (#189) ===");
+  Serial.println("\n=== TLS cert-validation bench harness ===");
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
