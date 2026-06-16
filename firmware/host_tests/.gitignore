@@ -1,0 +1,8 @@
+# Compiled host-test binaries (g++ output from running tests locally/in CI).
+# Pattern-based so a NEW test_*.cpp's binary is ignored automatically — the
+# per-name list previously missed test_acquire (#386) and left an untracked
+# binary after every local run. Sources are kept; only the extensionless
+# compiled outputs are ignored.
+test_*
+!test_*.cpp
+!test_*.h
