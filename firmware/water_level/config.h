@@ -4,11 +4,8 @@
 // WiFi is configured by the customer via captive portal on first boot.
 // Device credentials are auto-generated and stored on the device.
 
-// API host — prod by default. A `-DPTW_STAGING` build (define the flag at
-// compile/flash time) targets the staging environment instead, for validating
-// the staging API end-to-end with a real device (#564 staging/prod split). The
-// shipped fleet builds WITHOUT this flag — RFC 0001 §4 Option C: devices are
-// hardcoded to prod, so a customer unit can never accidentally point at staging.
+// API host. Normal customer builds use the production API. A `-DPTW_STAGING`
+// build can target the staging API for controlled validation.
 #ifdef PTW_STAGING
 #define API_HOST "api.staging.pihatankwatch.nz"
 #else
@@ -18,10 +15,10 @@
 #define REGISTER_URL "https://" API_HOST "/devices/auto-register"
 #define LINK_URL     "https://" API_HOST "/devices/link"
 
-// Firmware version reported with each reading (#111) so the fleet/admin view can
+// Firmware version reported with each reading so the fleet/admin view can
 // see what's deployed and plan OTA. Bump this on every released change.
 // A staging build carries a "+staging" suffix so its readings are visibly
-// distinguishable in the fleet/admin view from real prod devices (QE, #586).
+// distinguishable from normal customer devices.
 #ifdef PTW_STAGING
 #define FIRMWARE_VERSION "1.1.0+staging"
 #else
@@ -70,12 +67,12 @@
 
 // ── Behaviour ────────────────────────────────────────────────────────────────
 
-// Initial reporting cadence, used until the backend returns its own
+// Initial reporting cadence, used until the API returns its own
 // `next_interval_secs` (which it sets per plan tier). See applyServerInterval().
 #define READING_INTERVAL_MS 60000
 #define WIFI_RESET_HOLD_MS  5000
 
-// ── TLS / SNTP (#189) ────────────────────────────────────────────────────────
+// ── TLS / SNTP ───────────────────────────────────────────────────────────────
 // All device HTTPS calls validate the server cert against the embedded Amazon
 // root bundle (certs.h) — fail-closed, no insecure fallback. TLS checks the
 // cert's validity dates against the device clock, and the ESP32 boots at epoch
@@ -87,7 +84,7 @@
 #define NTP_SERVER_2 "time.nist.gov"
 #define NTP_SERVER_3 "time.google.com"
 
-// Ultrasonic sampling (#190): take SENSOR_SAMPLES pings per reading and report
+// Ultrasonic sampling: take SENSOR_SAMPLES pings per reading and report
 // the median of the in-range ones, to reject the noise a single ping picks up
 // off a moving water surface. Report a failed read if fewer than SENSOR_MIN_VALID
 // pings are plausible. SENSOR_PING_GAP_MS lets echoes settle between pings.
@@ -95,7 +92,7 @@
 #define SENSOR_MIN_VALID    3
 #define SENSOR_PING_GAP_MS  60
 
-// ── Deep sleep (#188) — optional, off by default ─────────────────────────────
+// ── Deep sleep — optional, off by default ────────────────────────────────────
 // USB-powered units stay always-on (no per-cycle WiFi reconnect latency). For a
 // battery/solar install, uncomment DEEP_SLEEP_ENABLED: the device deep-sleeps
 // between readings (µA-class draw vs ~80 mA busy-wait) and reboots each cycle —
@@ -107,7 +104,7 @@
 #define SLEEP_RETRY_CAP_MS  300000UL    // failed cycle → retry within 5 min, not a full day
 #define SENSOR_WARMUP_MS    300         // sensor settle after wake before the first ping
 
-// ── Battery telemetry (#111) — optional, off by default ──────────────────────
+// ── Battery telemetry — optional, off by default ─────────────────────────────
 // USB-powered units have no battery to measure and omit battery telemetry. For a
 // battery/solar install, wire the pack through a voltage divider to an ADC pin
 // and set BATTERY_ADC_PIN to that GPIO; the device will then report battery_v.

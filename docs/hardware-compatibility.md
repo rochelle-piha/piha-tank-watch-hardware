@@ -26,7 +26,7 @@ Legend:
 | Raspberry Pi Pico W | **Not supported** | Different SDK entirely. Would be a port. |
 
 The firmware logic (WiFi provisioning, credential generation, HTTPS reporting,
-backend-driven cadence) is board-agnostic across the ESP32 family — only the
+server-driven cadence) is board-agnostic across the ESP32 family — only the
 pin map and the flash FQBN differ. See the `BOARD CONFIG` block in `config.h`.
 
 ## Sensors
@@ -37,7 +37,7 @@ pin map and the flash FQBN differ. See the `BOARD CONFIG` block in `config.h`.
 | HC-SR04 | **Adaptable, but unsuitable** | Same trig/echo protocol, so it works electrically with no code change — but it is **not waterproof** and will fail in a tank's humid/condensing environment. Use the JSN-SR04T. |
 | UART / analog / pressure sensors (A02YYUW, submersible, etc.) | **Roadmap** | A different read path than trig/echo `pulseIn`. Needs the sensor-read seam. |
 
-## Transports (sensor → backend)
+## Transports (sensor → API)
 
 | Transport | Status | Notes |
 |-----------|--------|-------|
@@ -54,7 +54,7 @@ pin map and the flash FQBN differ. See the `BOARD CONFIG` block in `config.h`.
 
 ## Reporting cadence
 
-Cadence is **set by the backend**, not the firmware: each `/reading` response
+Cadence is **set by the API**, not the firmware: each `/reading` response
 returns `next_interval_secs` per the tank's plan tier (Free = daily, Plus =
 hourly, Pro+ = per-minute) and the firmware adapts to it (clamped to a 30 s
 floor / 24 h ceiling). The compile-time `READING_INTERVAL_MS` is only the

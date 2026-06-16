@@ -1,8 +1,8 @@
-// test_transport.cpp — host tests for the POST /reading response handling (#325).
+// test_transport.cpp — host tests for the POST /reading response handling.
 //
 // transportReport()'s two branch decisions, pinned without a bench or live API:
-//   ptw_server_reached(status)      — the #188 retry signal
-//   ptw_response_has_interval(status) — the #42/#207 cost-cliff guard
+//   ptw_server_reached(status)      — the retry signal
+//   ptw_response_has_interval(status) — the cadence guard
 // The HAL (the actual POST + JSON parse) stays in the .ino and is proven by the
 // ESP32 compile check; these are the decisions a regression would silently break.
 //
@@ -21,7 +21,7 @@ static int g_passed = 0, g_failed = 0;
     else { g_failed++; std::printf("FAIL  %s\n", name); }           \
   } while (0)
 
-// ── server-reached (drives the #188 retry-sooner-on-failure path) ─────────────
+// ── server-reached (drives the retry-sooner-on-failure path) ─────────────────
 
 static void test_server_reached() {
   // Any HTTP response (any code) means the server was reached.
@@ -36,13 +36,13 @@ static void test_server_reached() {
   CHECK("reached: -11 → false (timeout)",    !ptw_server_reached(-11));
 }
 
-// ── honor next_interval_secs (the #42 cost-cliff guard) ───────────────────────
+// ── honor next_interval_secs ────────────────────────────────────────────────
 
 static void test_response_has_interval() {
-  // The backend sends the per-tier cadence on the 200 accept AND the 429
+  // The API sends the per-tier cadence on the 200 accept AND the 429
   // rate-limit reply — both must honor it.
   CHECK("interval: 200 → true", ptw_response_has_interval(200));
-  CHECK("interval: 429 → true (the cost-cliff guard)", ptw_response_has_interval(429));
+  CHECK("interval: 429 → true (honor backoff cadence)", ptw_response_has_interval(429));
   // No interval to honor on these — leave cadence unchanged.
   CHECK("interval: 422 → false (not assigned)", !ptw_response_has_interval(422));
   CHECK("interval: 500 → false (server error)", !ptw_response_has_interval(500));
@@ -55,7 +55,7 @@ static void test_response_has_interval() {
 
 static void test_compose() {
   // 429 is the subtle case: the device WAS reached *and* must honor the new
-  // interval — both true. Getting either wrong is a real bug (#42 / #188).
+  // interval — both true. Getting either wrong is a real bug.
   CHECK("429 is both reached and interval-bearing",
         ptw_server_reached(429) && ptw_response_has_interval(429));
   // A transport failure is neither — no interval to read, and reported as failed.
@@ -79,16 +79,16 @@ static void test_claim_gate() {
         ptw_claim_gate(true, true) == PTW_CLAIM_ALLOW);
 }
 
-// ── cycle success = reached AND registered (the #426 fix) ─────────────────────
+// ── cycle success = reached AND registered ───────────────────────────────────
 
 static void test_report_cycle_ok() {
-  // The bug #426 pinned: an UNregistered device's /reading is answered 401, so
+  // An UNregistered device's /reading is answered 401, so
   // it WAS reached — but the cycle must NOT count as success, or it sleeps the
   // full (up-to-24h) interval and starves autoRegister()'s retry. ANDing with
   // `registered` makes it fail → short retry cap → re-registers within minutes.
   CHECK("cycle: reached + registered → ok (normal success)",
         ptw_report_cycle_ok(true, true));
-  CHECK("cycle: reached(401) + UNregistered → NOT ok (the #426 fix; fast retry)",
+  CHECK("cycle: reached(401) + UNregistered → NOT ok (fast retry)",
         !ptw_report_cycle_ok(true, false));
   CHECK("cycle: not-reached + registered → NOT ok (no WiFi/TLS; fast retry)",
         !ptw_report_cycle_ok(false, true));
@@ -100,7 +100,7 @@ static void test_report_cycle_ok() {
         !ptw_report_cycle_ok(ptw_server_reached(401), /*registered=*/false));
 }
 
-// ── ptw_should_attempt_reregister (#574) ──────────────────────────────────────
+// ── ptw_should_attempt_reregister ────────────────────────────────────────────
 
 static void test_should_attempt_reregister() {
   const int N = 3;  // recommended threshold
@@ -122,7 +122,7 @@ static void test_should_attempt_reregister() {
   CHECK("reregister: negative count → no",  !ptw_should_attempt_reregister(-1, N));
 }
 
-// ── ptw_use_slow_backoff (#574) ────────────────────────────────────────────────
+// ── ptw_use_slow_backoff ────────────────────────────────────────────────────
 
 static void test_use_slow_backoff() {
   // No recovery attempted yet — normal path, do not slow-probe.

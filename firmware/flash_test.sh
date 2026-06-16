@@ -3,7 +3,7 @@ set -euo pipefail
 SKETCH="$(dirname "$0")/https_test"
 # CDCOnBoot=cdc routes Serial to the C3's NATIVE USB so the harness's
 # POSITIVE/NEGATIVE readout is visible over USB on a SuperMini — the bare C3 FQBN
-# defaults CDCOnBoot=Disabled (Serial → UART pins → silent over USB) (#189 bench).
+# defaults CDCOnBoot=Disabled (Serial → UART pins → silent over USB).
 # After flashing, open the monitor THEN tap reset so the native-USB port
 # re-enumerates and the boot output is captured.
 FQBN="${FQBN:-esp32:esp32:esp32c3:CDCOnBoot=cdc}"

@@ -6,16 +6,16 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "mbedtls/md.h"
-#include <time.h>     // time()/configTime — SNTP clock for TLS validity check (#189)
+#include <time.h>     // time()/configTime — SNTP clock for TLS validity check
 #include "config.h"
-#include "certs.h"    // Amazon root CA bundle for TLS cert validation (#189)
-#include "logic.h"   // pure, host-tested logic (median/clamp/payload/sleep — #325)
+#include "certs.h"    // Amazon root CA bundle for TLS cert validation
+#include "logic.h"   // pure, host-tested logic (median/clamp/payload/sleep)
 #ifdef DEEP_SLEEP_ENABLED
-#include <esp_sleep.h>   // timer + GPIO wake APIs (#188)
+#include <esp_sleep.h>   // timer + GPIO wake APIs
 #endif
 
 // A single acquired measurement. Kept as a struct (not a bare float) so future
-// telemetry — battery, RSSI, sensor-fault, firmware_version (#111) — can ride
+// telemetry — battery, RSSI, sensor-fault, firmware_version — can ride
 // along without changing the acquire→transport seam below.
 //
 // Declared at the top of the file on purpose: the Arduino .ino preprocessor
@@ -32,7 +32,7 @@ String      g_deviceId;
 String      g_secret;
 bool        g_registered;
 // How long to wait between readings. Starts at the compile-time default but the
-// backend overrides it per-reading via `next_interval_secs` (see applyServerInterval).
+// API overrides it per-reading via `next_interval_secs` (see applyServerInterval).
 uint32_t    g_intervalMs = READING_INTERVAL_MS;
 
 static void autoRegister();
@@ -63,13 +63,13 @@ static String sha256Hex(const String& input) {
   return hexStr(hash, 32);
 }
 
-// ── Secure transport (TLS cert validation) (#189) ─────────────────────────────
+// ── Secure transport (TLS cert validation) ───────────────────────────────────
 //
 // Every device HTTPS call goes through beginSecure() — there is no bare
 // http.begin(url) and no setInsecure() anywhere. The server cert is validated
 // against the embedded Amazon root bundle (certs.h), so a MITM on the customer's
 // WiFi can't impersonate api.pihatankwatch.nz to harvest the device credential
-// or inject fabricated readings (#189, lens #1: better no reading than a fake one).
+// or inject fabricated readings.
 
 // Sync the clock via SNTP so TLS can check the cert's validity dates. The ESP32
 // boots at epoch 0 (1970); a handshake then fails "cert not yet valid" even with
@@ -110,13 +110,13 @@ static void loadOrGenerateCredentials() {
   g_deviceId   = prefs.getString("device_id", "");
   g_secret     = prefs.getString("secret",    "");
   g_registered = prefs.getBool("registered",  false);
-  // Server-driven reporting interval survives reboots/deep-sleep (#188): a
+  // Server-driven reporting interval survives reboots/deep-sleep: a
   // free-tier device wakes already knowing to sleep ~24h instead of burning a
   // post on the 60s compile-time default every cycle.
   g_intervalMs = prefs.getULong("interval_ms", READING_INTERVAL_MS);
 
   if (g_deviceId.isEmpty() || g_secret.isEmpty()) {
-    // Device id from the eFuse MAC (#412): the old 4-random-byte id had a 32-bit
+    // Device id from the eFuse MAC: the old 4-random-byte id had a 32-bit
     // space whose birthday-bound collision hit ~50% near 77k devices, and a
     // collision SILENTLY BRICKED the loser (its secret never matched the first
     // device's stored hash → 401 forever). The eFuse MAC is 48-bit, Espressif-
@@ -126,7 +126,7 @@ static void loadOrGenerateCredentials() {
     // this block only runs for a fresh or NVS-wiped device. (A wipe still orphans
     // the server record, same as today: the re-derived id matches but the secret
     // is new and auto-register won't re-key it — server-side wipe-recovery is a
-    // #412 follow-up, not done here.)
+    // follow-up, not done here.)
     // ESP.getEfuseMac() returns the 48-bit factory MAC (Arduino-native, no extra
     // include vs esp_efuse_mac_get_default). Extract its 6 bytes for the
     // host-tested derivation; LSB-first is fine — the id only needs to be unique
@@ -144,7 +144,7 @@ static void loadOrGenerateCredentials() {
     prefs.putString("secret",    g_secret);
     prefs.putBool("registered",  false);
     g_registered = false;
-    Serial.println("New device credentials generated (id from eFuse MAC, #412)");
+    Serial.println("New device credentials generated (id from eFuse MAC)");
   }
   prefs.end();
 
@@ -494,7 +494,7 @@ static void runCaptivePortal() {
       return;
     }
     // Fail closed: the OTP + email (and the device creds on /link) must not ride
-    // an unvalidated connection on the customer's WiFi (#189). send-otp runs over
+    // an unvalidated connection on the customer's WiFi. send-otp runs over
     // the already-joined station link (gated on WL_CONNECTED above), so there's no
     // third-party captive portal to accommodate — validate like every other call.
     WiFiClientSecure client;
@@ -631,22 +631,22 @@ static float readDistance() {
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
   long us = pulseIn(ECHO_PIN, HIGH, 30000);
-  return ptw_distance_from_echo_us(us);   // conversion is host-tested (#325)
+  return ptw_distance_from_echo_us(us);   // conversion is host-tested
 }
 
 // Acquire one reading from the sensor, independent of how it's transported.
 // Returns false when too few pings are valid (caller skips reporting). This is
-// the "acquire" half of the acquire→transport seam (#197): swapping the sensor
+// the "acquire" half of the acquire→transport seam: swapping the sensor
 // changes only this function; swapping the transport (WiFi → LoRa) changes only
 // transportReport() below — neither touches the other.
 //
 // A single JSN-SR04T ping is noisy over a moving water surface (ripples, foam,
 // condensation, spurious echoes), so we take SENSOR_SAMPLES pings and report the
-// **median** of the in-range ones (#190). The median rejects outliers a mean
+// **median** of the in-range ones. The median rejects outliers a mean
 // would smear in; with the per-tier cadence a free device stores one reading a
 // day, so a single bad ping must not become that day's value.
 static bool acquireReading(Reading& out) {
-  // HAL-injected (#325): ptw_acquire_reading owns the collect→median flow (and
+  // HAL-injected: ptw_acquire_reading owns the collect→median flow (and
   // is host-tested through the same code path); this lambda is the only HAL
   // part — one sensor ping plus the settle delay between pings.
   return ptw_acquire_reading(
@@ -656,19 +656,18 @@ static bool acquireReading(Reading& out) {
 
 // ── Reporting cadence ──────────────────────────────────────────────────────────
 
-// The backend tells us how often to report based on the tank's plan tier
+// The API tells us how often to report based on the tank's plan tier
 // (free=daily, Plus=hourly, Pro+=per-minute) via `next_interval_secs` on every
 // /reading response — including the 429 rate-limit reply. Honor it: a free-tier
-// device posting every minute needlessly burns device power and multiplies
-// server-side cost (an S3 latest.json PUT + DynamoDB write + Lambda invocation on
-// every post). Falls back to the current cadence if the field is absent.
+// device posting every minute needlessly burns device power and ignores the
+// server's cadence. Falls back to the current cadence if the field is absent.
 static void applyServerInterval(long secs) {
-  // Clamp/convert decision lives in logic.h (host-tested, #339): 30s floor,
+  // Clamp/convert decision lives in logic.h: 30s floor,
   // 24h ceiling, 0 = field missing/invalid → keep current cadence.
   uint32_t ms = (uint32_t)ptw_clamp_interval_ms(secs);
   if (ms != 0 && ms != g_intervalMs) {
     g_intervalMs = ms;
-    // Persist so the interval survives reboot/deep-sleep (#188). NVS write only
+    // Persist so the interval survives reboot/deep-sleep. NVS write only
     // on change — tier changes are rare, so flash wear is a non-issue.
     prefs.begin("ptw", false);
     prefs.putULong("interval_ms", g_intervalMs);
@@ -680,16 +679,16 @@ static void applyServerInterval(long secs) {
 
 // ── Transport ───────────────────────────────────────────────────────────────
 //
-// The "transport" half of the acquire→transport seam (#197): how an acquired
-// Reading reaches the backend. This is the WiFi-direct transport — the device
+// The "transport" half of the acquire→transport seam: how an acquired
+// Reading reaches the API. This is the WiFi-direct transport — the device
 // POSTs the reading to the API itself and adapts cadence from the response.
 //
-// A LoRa long-range variant (#48) would supply an alternative transportReport()
+// A LoRa long-range variant would supply an alternative transportReport()
 // that transmits the Reading over radio to a house receiver, which POSTs it to
 // the API on the tank unit's behalf. The acquisition and cadence code stay put;
 // only this function is swapped.
 
-// Sample the battery voltage through the configured divider (#111). Only built
+// Sample the battery voltage through the configured divider. Only built
 // when BATTERY_ADC_PIN is set — USB-powered units have no battery and skip this.
 #ifdef BATTERY_ADC_PIN
 static float readBatteryVoltage() {
@@ -700,10 +699,10 @@ static float readBatteryVoltage() {
 }
 #endif
 
-// Gather device-health telemetry from the HAL (#111). The hardware reads live
+// Gather device-health telemetry from the HAL. The hardware reads live
 // here; which fields the wire carries — names, rounding, presence rules — is
 // the contract in logic.h's ptw_build_reading_payload, pinned by host tests
-// (#325). All fields are auxiliary — the backend (#187) keeps only valid ones
+// All fields are auxiliary — the API keeps only valid ones
 // and never fails the reading over them.
 static PtwTelemetry gatherTelemetry(bool sensor_ok) {
   PtwTelemetry t = {};
@@ -723,7 +722,7 @@ static PtwTelemetry gatherTelemetry(bool sensor_ok) {
 
 // Returns true when the server was reached (any HTTP status); false on a
 // transport-level failure (no WiFi / connect error) — the deep-sleep path
-// (#188) retries sooner on false instead of sleeping a full interval.
+// retries sooner on false instead of sleeping a full interval.
 static bool transportReport(const Reading& r) {
   if (WiFi.status() != WL_CONNECTED) {
     WiFi.reconnect();
@@ -735,7 +734,7 @@ static bool transportReport(const Reading& r) {
   HTTPClient http;
   if (!beginSecure(client, http, API_URL)) {
     // Fail closed: no validated link → don't post the reading (and don't leak the
-    // x-api-key). Returns false so the deep-sleep path retries sooner (#188).
+    // x-api-key). Returns false so the deep-sleep path retries sooner.
     Serial.println("POST /reading skipped — secure connection unavailable");
     return false;
   }
@@ -744,14 +743,14 @@ static bool transportReport(const Reading& r) {
 
   JsonDocument doc;
   // Wire contract (field names/rounding/presence) lives in logic.h, host-tested
-  // (#325). sensor_ok=true: a transported reading is by definition a good read.
+  // sensor_ok=true: a transported reading is by definition a good read.
   ptw_build_reading_payload(doc, r.distance_cm, gatherTelemetry(true));
   String body;
   serializeJson(doc, body);
 
   int status = http.POST(body);
 
-  // Response-handling decisions are host-tested in logic.h (#325).
+  // Response-handling decisions are host-tested in logic.h.
   if (ptw_response_has_interval(status)) {   // 200 accept or 429 rate-limit
     JsonDocument resp;
     if (deserializeJson(resp, http.getString()) == DeserializationError::Ok) {
@@ -789,7 +788,7 @@ static void checkBootButton() {
   }
 }
 
-// ── Deep sleep (#188) ─────────────────────────────────────────────────────────
+// ── Deep sleep ────────────────────────────────────────────────────────────────
 
 #ifdef DEEP_SLEEP_ENABLED
 // Sleep until the next reading cycle. Deep sleep ends in a full reboot —
@@ -839,7 +838,7 @@ void setup() {
     }
   }
   // JSN-SR04T needs a moment after power-up before readings are stable; every
-  // deep-sleep wake is a power-up. (Bench validation may tune this — #188.)
+  // deep-sleep wake is a power-up. Bench validation may tune this.
   delay(SENSOR_WARMUP_MS);
 #endif
 
@@ -848,11 +847,11 @@ void setup() {
 }
 
 void loop() {
-  // Self-healing registration (#410): autoRegister() early-returns once
+  // Self-healing registration: autoRegister() early-returns once
   // g_registered, so this is a no-op (no network) on every cycle after the
   // device is registered. It matters when registration FAILED at boot — a
   // transient server 5xx, SNTP not yet synced so beginSecure() failed closed
-  // (#189), or a WiFi hiccup. In the always-on build setup() runs once and
+  // TLS validation, or a WiFi hiccup. In the always-on build setup() runs once and
   // never again, so without retrying here a boot-time registration failure
   // would leave the device with no server record → every /reading 401s
   // (_authenticate_device finds no device) → permanently dark until a manual
@@ -866,7 +865,7 @@ void loop() {
   if (acquireReading(r)) {
     Serial.printf("Distance: %.1f cm\n", r.distance_cm);
     // A cycle is "successful" (→ full-interval sleep) only if the report reached
-    // the server AND we're registered (#426). transportReport() returns whether
+    // the server AND we're registered. transportReport() returns whether
     // the server was *reached* — but an UNregistered device's /reading is answered
     // 401, which IS a reached response, so treating "reached" as "succeeded" would
     // sleep the full (up-to-24h) interval and starve the autoRegister() retry above
@@ -879,13 +878,13 @@ void loop() {
   }
 
 #ifdef DEEP_SLEEP_ENABLED
-  // Sleep decision is host-tested (logic.h, #188): success → the full
+  // Sleep decision is host-tested: success → the full
   // server-driven interval; failure → capped retry so a transient fault
   // doesn't blind the tank for a whole free-tier day. Never returns.
   deepSleepFor(ptw_sleep_duration_ms(ok, g_intervalMs, SLEEP_RETRY_CAP_MS));
 #else
   // Always-on build: cadence is the busy-wait below. A failed cycle retries
-  // sooner (capped) instead of waiting a full free-tier day — the same #188
+  // sooner (capped) instead of waiting a full free-tier day — the same
   // reliability rule the deep-sleep path uses, via the same host-tested decision
   // (logic.h). Without this, an always-on free-tier device (24h cadence) that
   // hits a transient fault — WiFi blip, server 5xx, or beginSecure() failing

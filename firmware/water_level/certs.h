@@ -1,5 +1,5 @@
 #pragma once
-// certs.h — Amazon Trust Services root CA bundle for TLS cert validation (#189).
+// certs.h — Amazon Trust Services root CA bundle for TLS cert validation.
 //
 // api.pihatankwatch.nz is an API Gateway custom domain on an ACM PUBLIC cert,
 // which chains to one of Amazon's four public roots. ACM rotates the *leaf*
@@ -118,8 +118,7 @@ static const char AMAZON_ROOT_CA_BUNDLE[] =
 // this fails the compile rather than shipping firmware that can't validate certs
 // (which, with fail-closed call sites, would brick connectivity). The four real
 // PEMs total ~4.4 KB; 3000 is a safe floor that only a missing/placeholder bundle
-// trips. (#189 — "certs.h must fail the build closed if the real bytes aren't pasted".)
+// trips.
 static_assert(sizeof(AMAZON_ROOT_CA_BUNDLE) > 3000,
   "certs.h: Amazon root CA bundle missing or truncated. Paste the verified CA1-CA4 "
   "PEMs from https://www.amazontrust.com/repository/ — TLS fails closed without them.");
-

@@ -1,4 +1,4 @@
-// test_tls.cpp — host tests for the TLS clock-readiness gate (#189).
+// test_tls.cpp — host tests for the TLS clock-readiness gate.
 //
 // The TLS wiring itself (setCACert, the WiFiClientSecure handshake) is hardware/
 // network and proven by the ESP32 compile check + Phase B bench verification.

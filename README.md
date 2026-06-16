@@ -48,4 +48,4 @@ See [docs/flashing.md](docs/flashing.md) for full instructions.
 
 ## Licence
 
-Firmware and docs: MIT licence. Cloud backend and web app: proprietary.
+Firmware and docs: MIT licence. Cloud API and web app: proprietary.

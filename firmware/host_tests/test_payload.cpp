@@ -1,12 +1,11 @@
-// test_payload.cpp — host tests for the reading-payload wire contract (#325 ph.2).
+// test_payload.cpp — host tests for the reading-payload wire contract.
 //
 // Pins WHICH fields a reading POST carries — exact names, types, rounding, and
 // presence rules — against logic.h's ptw_build_reading_payload. The doc is a
 // tiny fake recorder (operator[]= into maps), NOT ArduinoJson: the contract
-// under test is ours (the backend's _extract_telemetry reads these exact
-// names — lambda/handler.py READING_TELEMETRY_RANGES + sensor_ok +
-// firmware_version); the serializer is upstream's job and the ESP32 compile
-// check + device-sim (#317) cover the real-library path.
+// under test is ours (field names, types, rounding, and presence rules);
+// the serializer is upstream's job and the ESP32 compile check covers the
+// real-library path.
 //
 // Build + run:
 //   g++ -std=c++17 -Wall -Wextra -Werror -o t firmware/host_tests/test_payload.cpp && ./t
@@ -105,13 +104,11 @@ static void test_presence() {
   }
 }
 
-// ── exact field names = the backend contract ─────────────────────────────────
+// ── exact field names = the API contract ─────────────────────────────────────
 
 static void test_field_names() {
-  // These names are read verbatim by lambda/handler.py's _extract_telemetry
-  // (READING_TELEMETRY_RANGES keys + sensor_ok + firmware_version) and
-  // handle_post_reading (distance_cm). A rename here silently drops the field
-  // server-side — this test makes that a host-test failure instead.
+  // These names are read verbatim by the API. A rename here silently drops the
+  // field server-side — this test makes that a host-test failure instead.
   FakeDoc d;
   PtwTelemetry t = usb_connected();
   t.has_battery = true;

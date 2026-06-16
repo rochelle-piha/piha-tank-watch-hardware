@@ -1,4 +1,4 @@
-// test_acquire.cpp — host tests for the HAL-injected sensor acquisition (#325).
+// test_acquire.cpp — host tests for the HAL-injected sensor acquisition.
 //
 // Exercises ptw_distance_from_echo_us (the echo→cm conversion) and
 // ptw_acquire_reading (collect-N-pings → median) by injecting a *mock ping
