@@ -14,7 +14,9 @@ nix-shell  # from the repo root
 ```
 
 This installs `arduino-cli`, adds the ESP32 board package, and installs
-required libraries automatically on first run. You will see:
+required libraries automatically on first run. The downloaded board and library
+cache lives in the repository-local `.arduino/` directory, so this does not
+install a toolchain into host state. You will see:
 
 ```
 Setting up Arduino toolchain (one-time, may take a few minutes)...
