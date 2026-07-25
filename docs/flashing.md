@@ -6,37 +6,30 @@ and configures WiFi via the captive portal on first boot.
 
 ## Prerequisites
 
-Install the Arduino CLI toolchain. The easiest way on macOS/Linux is via
-the project's Nix dev environment:
+Use the project's Nix dev environment. It is the supported build route; it
+fetches only the artifact hashes pinned in
+[`firmware/arduino-toolchain-lock.json`](../firmware/arduino-toolchain-lock.json).
 
 ```bash
 nix-shell  # from the repo root
+bash firmware/bootstrap-arduino-toolchain.sh
 ```
 
-This installs `arduino-cli`, adds the ESP32 board package, and installs
-required libraries automatically on first run. The downloaded board and library
-cache lives in the repository-local `.arduino/` directory, so this does not
-install a toolchain into host state. You will see:
+`nix-shell` makes no Arduino package-manager call and does not mutate a local
+cache. The explicit bootstrap creates a small state directory containing only
+links to the immutable Nix closure, then makes the Arduino package, library and
+download paths read-only. It prints:
 
 ```
-Setting up Arduino toolchain (one-time, may take a few minutes)...
-Arduino toolchain ready.
+Pinned ESP32-C3 toolchain linked at ...
+No Arduino package-manager command or network fetch was run.
 ```
 
-If you prefer to manage Arduino manually:
-
-1. Install [Arduino CLI](https://arduino.github.io/arduino-cli/installation/)
-2. Add the ESP32 board package URL:
-   ```bash
-   arduino-cli config add board_manager.additional_urls \
-     https://espressif.github.io/arduino-esp32/package_esp32_index.json
-   arduino-cli core update-index
-   arduino-cli core install esp32:esp32
-   ```
-3. Install ArduinoJson:
-   ```bash
-   arduino-cli lib install "ArduinoJson"
-   ```
+The closure includes the shared ESP32 Arduino source core because that is the
+upstream platform package, but it deliberately excludes every non-C3 binary
+payload: no `esp-x32`, ESP32/S2/S3/C5/C6/H2/P4 libraries, Xtensa compiler,
+GDB, OpenOCD, or fallback toolchain is present. A missing pinned artifact fails
+closed rather than causing Arduino CLI to download one.
 
 ## Flash a single device
 
@@ -45,6 +38,7 @@ If you prefer to manage Arduino manually:
 2. From the repo root, enter the dev environment if you haven't already:
    ```bash
    nix-shell
+   bash firmware/bootstrap-arduino-toolchain.sh
    ```
 
 3. Run the flash script:
@@ -83,6 +77,7 @@ arduino-cli board list
 Then compile and upload, replacing `PORT` with the detected port:
 
 ```bash
+./firmware/require-arduino-toolchain.sh
 arduino-cli compile --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc firmware/water_level
 arduino-cli upload  --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc --port PORT firmware/water_level
 ```
@@ -92,6 +87,20 @@ arduino-cli upload  --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc --port PORT firmwar
 > instead of the C3's native USB — so on a SuperMini the **serial monitor stays
 > silent over USB** and the device looks dead when it isn't. The helper scripts
 > (`flash.sh`/`flash_test.sh`) already set this; match it here.
+
+## Verify a fresh pinned cache
+
+From an empty temporary state, this command proves that the actual ESP32-C3
+firmware compiles without Arduino CLI downloading an index, core, library or
+tool. It is useful after changing the lock or Nix closure:
+
+```bash
+state="$(mktemp -d)/piha-tank-watch-arduino"
+PTW_ARDUINO_STATE_DIR="$state" nix-shell --run 'bash firmware/test-arduino-toolchain-fresh.sh'
+```
+
+The test deliberately leaves the temporary state for inspection. Remove it
+yourself after reviewing it.
 
 ## After flashing
 

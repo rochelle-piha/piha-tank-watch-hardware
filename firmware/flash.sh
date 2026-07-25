@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# shellcheck source=firmware/require-arduino-toolchain.sh
+source "$(dirname "$0")/require-arduino-toolchain.sh"
+
 SKETCH="$(dirname "$0")/water_level"
 # CDCOnBoot=cdc routes Serial to the C3's NATIVE USB. Without it the C3 FQBN
 # defaults CDCOnBoot=Disabled → Serial goes to the UART pins, so on a SuperMini
