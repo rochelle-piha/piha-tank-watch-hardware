@@ -30,7 +30,10 @@ require_link "$toolchain/user/libraries" "$state_root/user/libraries"
 for required in \
   "$state_root/data/packages/esp32/hardware/esp32/3.3.11/platform.txt" \
   "$state_root/data/packages/esp32/tools/esp-rv32/2601" \
+  "$state_root/data/packages/esp32/tools/esp-x32/2601" \
+  "$state_root/data/packages/esp32/tools/esp32-libs/3.3.11" \
   "$state_root/data/packages/esp32/tools/esp32c3-libs/3.3.11" \
+  "$state_root/data/packages/esp32/tools/esp32s3-libs/3.3.11" \
   "$state_root/data/packages/esp32/tools/esptool_py/5.3.1/esptool" \
   "$state_root/data/packages/builtin/tools/ctags/5.8-arduino11/ctags" \
   "$state_root/user/libraries/ArduinoJson/library.properties"; do
@@ -40,9 +43,9 @@ for required in \
   fi
 done
 
-for unexpected in esp-x32 esp32-libs esp32s2-libs esp32s3-libs esp32c5-libs esp32c6-libs esp32h2-libs esp32p4-libs esp32p4_es-libs; do
+for unexpected in esp32s2-libs esp32c5-libs esp32c6-libs esp32h2-libs esp32p4-libs esp32p4_es-libs; do
   if [ -e "$state_root/data/packages/esp32/tools/$unexpected" ]; then
-    echo "Unexpected non-C3 ESP32 binary payload found: $unexpected" >&2
+    echo "Unexpected undeclared ESP32 binary payload found: $unexpected" >&2
     exit 2
   fi
 done

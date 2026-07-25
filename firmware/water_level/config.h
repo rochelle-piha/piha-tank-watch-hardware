@@ -29,7 +29,8 @@
 //  BOARD CONFIG — set this for your board
 // ─────────────────────────────────────────────────────────────────────────────
 // The default is the ESP32-C3 SuperMini (the reference build). To use a
-// different ESP32 board, switch the BOARD_* line below to its preset and flash
+// different declared ESP32 board, replace the default BOARD_* definition below
+// with exactly one other preset (or pass it as a compiler definition) and flash
 // with the matching FQBN, e.g.:
 //
 //     FQBN=esp32:esp32:esp32 bash firmware/flash.sh
@@ -41,7 +42,15 @@
 // NOT a drop-in: ESP8266 and Raspberry Pi Pico W use a different core/SDK and
 // won't compile as-is. See docs/hardware-compatibility.md.
 
-#define BOARD_ESP32C3_SUPERMINI   // ← change this line to select another board
+// Keep the reference C3 preset unless a bounded build explicitly selects one
+// of the other declared presets (for example with -DBOARD_ESP32_DEVKIT).
+#if !defined(BOARD_ESP32C3_SUPERMINI) && !defined(BOARD_ESP32_DEVKIT) && !defined(BOARD_ESP32S3)
+  #define BOARD_ESP32C3_SUPERMINI
+#endif
+
+#if (defined(BOARD_ESP32C3_SUPERMINI) + defined(BOARD_ESP32_DEVKIT) + defined(BOARD_ESP32S3)) != 1
+  #error "Select exactly one board preset: BOARD_ESP32C3_SUPERMINI / BOARD_ESP32_DEVKIT / BOARD_ESP32S3."
+#endif
 
 #if defined(BOARD_ESP32C3_SUPERMINI)
   // ESP32-C3 SuperMini — flash FQBN: esp32:esp32:esp32c3
