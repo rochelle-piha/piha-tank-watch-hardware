@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck source=firmware/require-arduino-toolchain.sh
+source "$(dirname "$0")/require-arduino-toolchain.sh"
 SKETCH="$(dirname "$0")/https_test"
 # CDCOnBoot=cdc routes Serial to the C3's NATIVE USB so the harness's
 # POSITIVE/NEGATIVE readout is visible over USB on a SuperMini — the bare C3 FQBN

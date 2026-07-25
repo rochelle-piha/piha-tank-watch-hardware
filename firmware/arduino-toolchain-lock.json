@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "board": "esp32:esp32:esp32c3",
+  "platform": {
+    "version": "3.3.11",
+    "url": "https://github.com/espressif/arduino-esp32/releases/download/3.3.11/esp32-core-3.3.11.zip",
+    "hash": "sha256-oYID8kKfVVHskpuA6BKeQ533o6AJtTazBfALSh8bu2I=",
+    "archiveRoot": "esp32-core-3.3.11"
+  },
+  "c3Libraries": {
+    "version": "3.3.11",
+    "url": "https://github.com/espressif/arduino-esp32/releases/download/3.3.11/esp32c3-libs-3.3.11.zip",
+    "hash": "sha256-iHBndIRnoALZNU3CoUz9IzUo5tiaC1F425C6QiThfl0=",
+    "archiveRoot": "esp32c3-libs"
+  },
+  "arduinoJson": {
+    "version": "7.4.3",
+    "url": "https://downloads.arduino.cc/libraries/github.com/bblanchon/ArduinoJson-7.4.3.zip",
+    "hash": "sha256-zY0vfk8G634hW+7LDeUyaoLQR6mU6EJGVyrXPdxSdG8=",
+    "archiveRoot": "ArduinoJson-7.4.3"
+  },
+  "allowedEsp32ToolDirectories": [
+    "esp-rv32",
+    "esp32c3-libs",
+    "esptool_py"
+  ],
+  "targets": {
+    "aarch64-darwin": {
+      "riscvToolchain": {
+        "version": "2601",
+        "url": "https://github.com/espressif/crosstool-NG/releases/download/esp-14.2.0_20260121/riscv32-esp-elf-14.2.0_20260121-aarch64-apple-darwin.tar.gz",
+        "hash": "sha256-yzIzZFKkyJlrOIFHYalF/nhW+tofTVeVDLq+mw7L/FI=",
+        "archiveRoot": "riscv32-esp-elf"
+      },
+      "esptool": {
+        "version": "5.3.1",
+        "url": "https://github.com/espressif/esptool/releases/download/v5.3.1/esptool-v5.3.1-macos-arm64.tar.gz",
+        "hash": "sha256-9j9yA9iM/kwXrqNNbPgnaUWM4gTkmgWBbGOEwtKZ5so=",
+        "archiveRoot": "esptool-macos-arm64"
+      },
+      "ctags": {
+        "version": "5.8-arduino11",
+        "url": "https://downloads.arduino.cc/tools/ctags-5.8-arduino11-pm-x86_64-apple-darwin.zip",
+        "hash": "sha256-v3SAcmDd8OH8lNZ+nNikG3wKLwvuA+JU5pdRObN+8lA=",
+        "archiveRoot": "ctags-5.8-arduino11"
+      },
+      "serialDiscovery": {
+        "version": "1.5.2",
+        "url": "https://downloads.arduino.cc/discovery/serial-discovery/serial-discovery_v1.5.2_macOS_ARM64.tar.gz",
+        "hash": "sha256-q4X80PFCB9l+kJWDHOLdxFcYlSsSWmF2ld0ZCmqUJy8=",
+        "archiveRoot": "serial-discovery_osx_darwin_arm64"
+      },
+      "serialMonitor": {
+        "version": "0.15.0",
+        "url": "https://downloads.arduino.cc/monitor/serial-monitor/serial-monitor_v0.15.0_macOS_ARM64.tar.gz",
+        "hash": "sha256-K5xek/NrB9Oon3+aYvpf6VJCBCcz859y6ym0buoqSlM=",
+        "archiveRoot": "serial-monitor_osx_darwin_arm64"
+      },
+      "mdnsDiscovery": {
+        "version": "1.1.0",
+        "url": "https://downloads.arduino.cc/discovery/mdns-discovery/mdns-discovery_v1.1.0_macOS_ARM64.tar.gz",
+        "hash": "sha256-9qIhsBAk8V3jNwpvOn7+dfOsdFrvTYy7Yj3b1XsTUmw=",
+        "archiveRoot": "mdns-discovery_osx_darwin_arm64"
+      },
+      "dfuDiscovery": {
+        "version": "0.1.2",
+        "url": "https://downloads.arduino.cc/discovery/dfu-discovery/dfu-discovery_v0.1.2_macOS_ARM64.tar.gz",
+        "hash": "sha256-UOBL9dWqIleoAp+fS1KJPpAnLNdHwQWSd3CMtesOVSQ=",
+        "archiveRoot": "dfu-discovery_osx_darwin_arm64"
+      }
+    },
+    "x86_64-linux": {
+      "riscvToolchain": {
+        "version": "2601",
+        "url": "https://github.com/espressif/crosstool-NG/releases/download/esp-14.2.0_20260121/riscv32-esp-elf-14.2.0_20260121-x86_64-linux-gnu.tar.gz",
+        "hash": "sha256-G3lhf0PPDiW5JkY1nRYj2L7xNQUKykRYbfWbamRJbYI=",
+        "archiveRoot": "riscv32-esp-elf"
+      },
+      "esptool": {
+        "version": "5.3.1",
+        "url": "https://github.com/espressif/esptool/releases/download/v5.3.1/esptool-v5.3.1-linux-amd64.tar.gz",
+        "hash": "sha256-6cxkH45KC2RLUoNtemtZ88bTJhITxczEH488MDXQaqQ=",
+        "archiveRoot": "esptool-linux-amd64"
+      },
+      "ctags": {
+        "version": "5.8-arduino11",
+        "url": "https://downloads.arduino.cc/tools/ctags-5.8-arduino11-pm-x86_64-pc-linux-gnu.tar.bz2",
+        "hash": "sha256-YrUU86rze1Qp73A4U7tGNl+5G0dUwZFtCFvxNABIhuM=",
+        "archiveRoot": "ctags-5.8-arduino11"
+      },
+      "serialDiscovery": {
+        "version": "1.5.2",
+        "url": "https://downloads.arduino.cc/discovery/serial-discovery/serial-discovery_v1.5.2_Linux_64bit.tar.gz",
+        "hash": "sha256-epXXOGxmwIRv5KqWtgHnJ4OuZPVB6y9e20/J5poEttM=",
+        "archiveRoot": "serial-discovery_linux_amd64"
+      },
+      "serialMonitor": {
+        "version": "0.15.0",
+        "url": "https://downloads.arduino.cc/monitor/serial-monitor/serial-monitor_v0.15.0_Linux_64bit.tar.gz",
+        "hash": "sha256-8byWgPLP8IaIvEzLr16b5M44qj8Q1ApIencEwEAG8Zs=",
+        "archiveRoot": "serial-monitor_linux_amd64"
+      },
+      "mdnsDiscovery": {
+        "version": "1.1.0",
+        "url": "https://downloads.arduino.cc/discovery/mdns-discovery/mdns-discovery_v1.1.0_Linux_64bit.tar.gz",
+        "hash": "sha256-aWb0BuW26A2Co4hwbW2dimPUYDXRnR5rT7Hr6vf+oFY=",
+        "archiveRoot": "mdns-discovery_linux_amd64"
+      },
+      "dfuDiscovery": {
+        "version": "0.1.2",
+        "url": "https://downloads.arduino.cc/discovery/dfu-discovery/dfu-discovery_v0.1.2_Linux_64bit.tar.gz",
+        "hash": "sha256-2CZJdB/Wy+Np1/4i0pDv1+KOTW/QuBt7Hqv/Q7SVtfg=",
+        "archiveRoot": "dfu-discovery_linux_amd64"
+      }
+    }
+  }
+}
