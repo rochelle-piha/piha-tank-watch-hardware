@@ -45,8 +45,8 @@ credentials or API keys needed before install. WiFi is provisioned via captive p
 ### Quick start
 
 ```bash
-cd firmware
-./flash.sh
+nix-shell
+bash firmware/flash.sh
 ```
 
 See [docs/flashing.md](docs/flashing.md) for full instructions.
