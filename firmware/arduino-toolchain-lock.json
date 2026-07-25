@@ -13,6 +13,18 @@
     "hash": "sha256-iHBndIRnoALZNU3CoUz9IzUo5tiaC1F425C6QiThfl0=",
     "archiveRoot": "esp32c3-libs"
   },
+  "esp32Libraries": {
+    "version": "3.3.11",
+    "url": "https://github.com/espressif/arduino-esp32/releases/download/3.3.11/esp32-libs-3.3.11.zip",
+    "hash": "sha256-99cLmNg0gu+QZfE+nb4h+MEpLw3G5u6fGXCzsuXqiU8=",
+    "archiveRoot": "esp32-libs"
+  },
+  "s3Libraries": {
+    "version": "3.3.11",
+    "url": "https://github.com/espressif/arduino-esp32/releases/download/3.3.11/esp32s3-libs-3.3.11.zip",
+    "hash": "sha256-/sdnlHCGlBIMbsgDzb/H3NNihuoit9OAl7eQm70Z97U=",
+    "archiveRoot": "esp32s3-libs"
+  },
   "arduinoJson": {
     "version": "7.4.3",
     "url": "https://downloads.arduino.cc/libraries/github.com/bblanchon/ArduinoJson-7.4.3.zip",
@@ -21,7 +33,10 @@
   },
   "allowedEsp32ToolDirectories": [
     "esp-rv32",
+    "esp-x32",
+    "esp32-libs",
     "esp32c3-libs",
+    "esp32s3-libs",
     "esptool_py"
   ],
   "targets": {
@@ -31,6 +46,12 @@
         "url": "https://github.com/espressif/crosstool-NG/releases/download/esp-14.2.0_20260121/riscv32-esp-elf-14.2.0_20260121-aarch64-apple-darwin.tar.gz",
         "hash": "sha256-yzIzZFKkyJlrOIFHYalF/nhW+tofTVeVDLq+mw7L/FI=",
         "archiveRoot": "riscv32-esp-elf"
+      },
+      "xtensaToolchain": {
+        "version": "2601",
+        "url": "https://github.com/espressif/crosstool-NG/releases/download/esp-14.2.0_20260121/xtensa-esp-elf-14.2.0_20260121-aarch64-apple-darwin.tar.gz",
+        "hash": "sha256-djdVF4wVKZ+NbzyIsSH59D0GvkmfEb5KXeUb8+dbMCI=",
+        "archiveRoot": "xtensa-esp-elf"
       },
       "esptool": {
         "version": "5.3.1",
@@ -75,6 +96,12 @@
         "url": "https://github.com/espressif/crosstool-NG/releases/download/esp-14.2.0_20260121/riscv32-esp-elf-14.2.0_20260121-x86_64-linux-gnu.tar.gz",
         "hash": "sha256-G3lhf0PPDiW5JkY1nRYj2L7xNQUKykRYbfWbamRJbYI=",
         "archiveRoot": "riscv32-esp-elf"
+      },
+      "xtensaToolchain": {
+        "version": "2601",
+        "url": "https://github.com/espressif/crosstool-NG/releases/download/esp-14.2.0_20260121/xtensa-esp-elf-14.2.0_20260121-x86_64-linux-gnu.tar.gz",
+        "hash": "sha256-TgkKbL8f93aWhNmiSMm4vb5MCtoJit2lS0xnqRRJr6c=",
+        "archiveRoot": "xtensa-esp-elf"
       },
       "esptool": {
         "version": "5.3.1",

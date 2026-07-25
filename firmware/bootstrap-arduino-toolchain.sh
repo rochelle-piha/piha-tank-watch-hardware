@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Materialise only links to the immutable, Nix-fetched ESP32-C3 toolchain.
+# Materialise only links to the immutable, Nix-fetched bounded ESP32 toolchain.
 #
 # This is deliberately an explicit command. Entering nix-shell must not fetch
 # Arduino packages, mutate a cache, or install every ESP32-family artifact.
 set -euo pipefail
 
 if [ -z "${PTW_ARDUINO_TOOLCHAIN:-}" ] || [ -z "${PTW_ARDUINO_STATE_DIR:-}" ]; then
-  echo "Enter nix-shell first; it provides the pinned ESP32-C3 toolchain." >&2
+  echo "Enter nix-shell first; it provides the pinned ESP32 C3, DevKit/WROOM and S3 toolchains." >&2
   exit 2
 fi
 
@@ -47,5 +47,5 @@ link_if_expected "$toolchain/user/libraries" "$state_root/user/libraries"
 # behind the user's back after the bootstrap has completed.
 chmod a-w "$state_root/data" "$state_root/user" "$state_root/downloads"
 
-echo "Pinned ESP32-C3 toolchain linked at $state_root"
+echo "Pinned ESP32 C3, DevKit/WROOM and S3 toolchains linked at $state_root"
 echo "No Arduino package-manager command or network fetch was run."

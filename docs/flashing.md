@@ -21,15 +21,15 @@ links to the immutable Nix closure, then makes the Arduino package, library and
 download paths read-only. It prints:
 
 ```
-Pinned ESP32-C3 toolchain linked at ...
+Pinned ESP32 C3, DevKit/WROOM and S3 toolchains linked at ...
 No Arduino package-manager command or network fetch was run.
 ```
 
-The closure includes the shared ESP32 Arduino source core because that is the
-upstream platform package, but it deliberately excludes every non-C3 binary
-payload: no `esp-x32`, ESP32/S2/S3/C5/C6/H2/P4 libraries, Xtensa compiler,
-GDB, OpenOCD, or fallback toolchain is present. A missing pinned artifact fails
-closed rather than causing Arduino CLI to download one.
+The closure includes the shared ESP32 Arduino source core and only the exact
+binary payloads needed by the declared C3, DevKit/WROOM and S3 presets: C3
+RISC-V, DevKit/S3 Xtensa, and their matching libraries. It deliberately
+excludes S2/C5/C6/H2/P4 and other fallback payloads. A missing pinned artifact
+fails closed rather than causing Arduino CLI to download one.
 
 ## Flash a single device
 
@@ -90,9 +90,10 @@ arduino-cli upload  --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc --port PORT firmwar
 
 ## Verify a fresh pinned cache
 
-From an empty temporary state, this command proves that the actual ESP32-C3
-firmware compiles without Arduino CLI downloading an index, core, library or
-tool. It is useful after changing the lock or Nix closure:
+From an empty temporary state, this command proves that the declared C3,
+DevKit/WROOM and S3 firmware presets compile without Arduino CLI downloading an
+index, core, library or tool. It is useful after changing the lock or Nix
+closure:
 
 ```bash
 state="$(mktemp -d)/piha-tank-watch-arduino"

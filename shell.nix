@@ -15,8 +15,11 @@ let
 
   platform = fetchArtifact lock.platform;
   c3Libraries = fetchArtifact lock.c3Libraries;
+  esp32Libraries = fetchArtifact lock.esp32Libraries;
+  s3Libraries = fetchArtifact lock.s3Libraries;
   arduinoJson = fetchArtifact lock.arduinoJson;
   riscvToolchain = fetchArtifact target.riscvToolchain;
+  xtensaToolchain = fetchArtifact target.xtensaToolchain;
   esptool = fetchArtifact target.esptool;
   ctags = fetchArtifact target.ctags;
   serialDiscovery = fetchArtifact target.serialDiscovery;
@@ -24,7 +27,7 @@ let
   mdnsDiscovery = fetchArtifact target.mdnsDiscovery;
   dfuDiscovery = fetchArtifact target.dfuDiscovery;
 
-  toolchain = pkgs.runCommand "piha-tank-watch-esp32c3-toolchain-${lock.platform.version}-${system}" {
+  toolchain = pkgs.runCommand "piha-tank-watch-esp32-toolchain-${lock.platform.version}-${system}" {
     nativeBuildInputs = [ pkgs.unzip pkgs.gnutar pkgs.gzip pkgs.bzip2 ];
   } ''
     unpack() {
@@ -53,10 +56,24 @@ let
     mkdir -p "$out/data/packages/esp32/tools/esp32c3-libs"
     mv "$out/unpack/c3-libraries/${lock.c3Libraries.archiveRoot}" \
       "$out/data/packages/esp32/tools/esp32c3-libs/${lock.c3Libraries.version}"
+    mkdir -p "$out/unpack/esp32-libraries"
+    unpack '${lock.esp32Libraries.url}' '${esp32Libraries}' "$out/unpack/esp32-libraries"
+    mkdir -p "$out/data/packages/esp32/tools/esp32-libs"
+    mv "$out/unpack/esp32-libraries/${lock.esp32Libraries.archiveRoot}" \
+      "$out/data/packages/esp32/tools/esp32-libs/${lock.esp32Libraries.version}"
+    mkdir -p "$out/unpack/s3-libraries"
+    unpack '${lock.s3Libraries.url}' '${s3Libraries}' "$out/unpack/s3-libraries"
+    mkdir -p "$out/data/packages/esp32/tools/esp32s3-libs"
+    mv "$out/unpack/s3-libraries/${lock.s3Libraries.archiveRoot}" \
+      "$out/data/packages/esp32/tools/esp32s3-libs/${lock.s3Libraries.version}"
     unpack '${target.riscvToolchain.url}' '${riscvToolchain}' "$out/data/packages/esp32/tools"
     mkdir -p "$out/data/packages/esp32/tools/esp-rv32"
     mv "$out/data/packages/esp32/tools/${target.riscvToolchain.archiveRoot}" \
       "$out/data/packages/esp32/tools/esp-rv32/${target.riscvToolchain.version}"
+    unpack '${target.xtensaToolchain.url}' '${xtensaToolchain}' "$out/data/packages/esp32/tools"
+    mkdir -p "$out/data/packages/esp32/tools/esp-x32"
+    mv "$out/data/packages/esp32/tools/${target.xtensaToolchain.archiveRoot}" \
+      "$out/data/packages/esp32/tools/esp-x32/${target.xtensaToolchain.version}"
     unpack '${target.esptool.url}' '${esptool}' "$out/data/packages/esp32/tools"
     mkdir -p "$out/data/packages/esp32/tools/esptool_py"
     mv "$out/data/packages/esp32/tools/${target.esptool.archiveRoot}" \
@@ -98,9 +115,12 @@ let
       > "$out/data/inventory.yaml"
 
     test -x "$out/data/packages/esp32/tools/esp-rv32/2601/bin/riscv32-esp-elf-g++"
+    test -x "$out/data/packages/esp32/tools/esp-x32/2601/bin/xtensa-esp-elf-g++"
+    test -e "$out/data/packages/esp32/tools/esp32-libs/3.3.11/bin/bootloader_qio_80m.elf"
+    test -e "$out/data/packages/esp32/tools/esp32s3-libs/3.3.11/bin/bootloader_qio_80m.elf"
     test -x "$out/data/packages/esp32/tools/esptool_py/5.3.1/esptool"
     test -x "$out/data/packages/builtin/tools/ctags/5.8-arduino11/ctags"
-    for unexpected in esp-x32 esp32-libs esp32s2-libs esp32s3-libs esp32c5-libs esp32c6-libs esp32h2-libs esp32p4-libs esp32p4_es-libs; do
+    for unexpected in esp32s2-libs esp32c5-libs esp32c6-libs esp32h2-libs esp32p4-libs esp32p4_es-libs; do
       test ! -e "$out/data/packages/esp32/tools/$unexpected"
     done
   '';
@@ -121,6 +141,6 @@ pkgs.mkShell {
     export ARDUINO_DIRECTORIES_DATA="$PTW_ARDUINO_STATE_DIR/data"
     export ARDUINO_DIRECTORIES_DOWNLOADS="$PTW_ARDUINO_STATE_DIR/downloads"
     export ARDUINO_DIRECTORIES_USER="$PTW_ARDUINO_STATE_DIR/user"
-    printf '%s\n' "ESP32-C3 toolchain is pinned and read-only. Run bash firmware/bootstrap-arduino-toolchain.sh before compiling or flashing."
+    printf '%s\n' "ESP32 C3, DevKit/WROOM and S3 toolchains are pinned and read-only. Run bash firmware/bootstrap-arduino-toolchain.sh before compiling or flashing."
   '';
 }

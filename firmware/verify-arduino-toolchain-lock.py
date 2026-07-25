@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fast source-level guardrails for the pinned ESP32-C3 toolchain."""
+"""Fast source-level guardrails for the pinned declared ESP32 toolchain."""
 
 from __future__ import annotations
 
@@ -37,9 +37,9 @@ def main() -> None:
     if lock.get("schemaVersion") != 1:
         fail("unsupported schemaVersion")
     if lock.get("board") != "esp32:esp32:esp32c3":
-        fail("the lock must be specific to ESP32-C3")
+        fail("the lock must retain ESP32-C3 as the reference board")
 
-    for name in ("platform", "c3Libraries", "arduinoJson"):
+    for name in ("platform", "c3Libraries", "esp32Libraries", "s3Libraries", "arduinoJson"):
         require_artifact(name, lock.get(name))
         if not lock[name].get("version") or not lock[name].get("archiveRoot"):
             fail(f"{name} must pin a version and archive root")
@@ -47,7 +47,14 @@ def main() -> None:
     if "indexes" in lock:
         fail("the closure must not retain a mutable Arduino index source")
 
-    expected_tools = {"esp-rv32", "esp32c3-libs", "esptool_py"}
+    expected_tools = {
+        "esp-rv32",
+        "esp-x32",
+        "esp32-libs",
+        "esp32c3-libs",
+        "esp32s3-libs",
+        "esptool_py",
+    }
     if set(lock.get("allowedEsp32ToolDirectories", [])) != expected_tools:
         fail("the ESP32 binary-payload allowlist changed")
 
@@ -56,6 +63,7 @@ def main() -> None:
         fail("only the reviewed local and Platform runner targets are supported")
     required_target_artifacts = {
         "riscvToolchain",
+        "xtensaToolchain",
         "esptool",
         "ctags",
         "serialDiscovery",
@@ -80,6 +88,9 @@ def main() -> None:
         '"packages": []',
         '"libraries": []',
         "test ! -e \"$out/data/packages/esp32/tools/$unexpected\"",
+        "esp-x32/2601/bin/xtensa-esp-elf-g++",
+        "esp32-libs/3.3.11/bin/bootloader_qio_80m.elf",
+        "esp32s3-libs/3.3.11/bin/bootloader_qio_80m.elf",
     ):
         if required not in shell:
             fail(f"shell.nix no longer enforces {required!r}")
@@ -113,7 +124,7 @@ def main() -> None:
         if "require-arduino-toolchain.sh" not in (ROOT / script).read_text():
             fail(f"{script} must verify the explicit pinned bootstrap")
 
-    print("Pinned ESP32-C3 toolchain lock and no-runtime-download boundary verified.")
+    print("Pinned ESP32 C3, DevKit/WROOM and S3 toolchain lock and no-runtime-download boundary verified.")
 
 
 if __name__ == "__main__":

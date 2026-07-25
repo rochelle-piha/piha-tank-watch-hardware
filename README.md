@@ -40,10 +40,10 @@ credentials or API keys needed before install. WiFi is provisioned via captive p
 
 - [Nix](https://nixos.org/download/) with access to the repository-managed shell.
 
-The supported toolchain is deliberately narrow and reproducible: ESP32 Arduino
-core 3.3.11, the ESP32-C3 binary libraries and RISC-V compiler only, esptool,
-ArduinoJson 7.4.3, and the Arduino CLI support tools required to flash and
-monitor a board. Their URLs and SHA-256 hashes live in
+The supported toolchain is deliberately bounded and reproducible: ESP32 Arduino
+core 3.3.11; the exact C3, DevKit/WROOM and S3 binary libraries; the matching
+RISC-V and Xtensa compilers; esptool; ArduinoJson 7.4.3; and the Arduino CLI
+support tools required to flash and monitor a board. Their URLs and SHA-256 hashes live in
 [`firmware/arduino-toolchain-lock.json`](firmware/arduino-toolchain-lock.json).
 Entering the shell does not install Arduino packages or mutate a cache.
 

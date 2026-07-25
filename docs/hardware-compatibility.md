@@ -19,15 +19,16 @@ Legend:
 | Board | Status | Notes |
 |-------|--------|-------|
 | **ESP32-C3 SuperMini** | **Supported** (reference) | The default build. Flash FQBN `esp32:esp32:esp32c3:CDCOnBoot=cdc` (the `CDCOnBoot=cdc` routes Serial to the C3's native USB — without it the serial monitor is silent on a SuperMini; see [flashing.md](flashing.md)). Pins: TRIG GPIO4, ECHO GPIO5, BOOT GPIO9. |
-| ESP32 DevKit / WROOM | **Adaptable** | Select `BOARD_ESP32_DEVKIT` in `config.h`, flash with `FQBN=esp32:esp32:esp32`. BOOT button is GPIO0. |
-| ESP32-S3 DevKit | **Adaptable** | Select `BOARD_ESP32S3`, flash with `FQBN=esp32:esp32:esp32s3`. |
-| Other ESP32 (C6, etc.) | **Adaptable** | Same Arduino-ESP32 core — set your pins in `config.h` and pass the right FQBN. Confirm pins against the board's pinout (avoid input-only / strapping pins for TRIG). |
+| ESP32 DevKit / WROOM | **Adaptable** | The bounded, pinned closure includes this preset. Select `BOARD_ESP32_DEVKIT` in `config.h` (or compile with `-DBOARD_ESP32_DEVKIT`), then flash with `FQBN=esp32:esp32:esp32`. BOOT button is GPIO0. |
+| ESP32-S3 DevKit | **Adaptable** | The bounded, pinned closure includes this preset. Select `BOARD_ESP32S3` in `config.h` (or compile with `-DBOARD_ESP32S3`), then flash with `FQBN=esp32:esp32:esp32s3`. |
+| Other ESP32 (C6, etc.) | **DIY-experimental** | The present closure deliberately declares only C3, DevKit/WROOM and S3. A different ESP32 family needs its own reviewed, pinned binary closure and board preset; do not use an Arduino package-manager download at build time. Confirm pins against the board's pinout (avoid input-only / strapping pins for TRIG). |
 | ESP8266 | **Not supported** | Different core/SDK — no `esp_fill_random`, no ESP32 `mbedtls`/`Preferences` semantics. Would be a port. |
 | Raspberry Pi Pico W | **Not supported** | Different SDK entirely. Would be a port. |
 
 The firmware logic (WiFi provisioning, credential generation, HTTPS reporting,
-server-driven cadence) is board-agnostic across the ESP32 family — only the
-pin map and the flash FQBN differ. See the `BOARD CONFIG` block in `config.h`.
+server-driven cadence) is board-agnostic across the declared ESP32 presets —
+only the pin map and the flash FQBN differ. See the `BOARD CONFIG` block in
+`config.h`.
 
 ## Sensors
 
