@@ -18,6 +18,11 @@ require_build_directory() {
     exit 2
   fi
 
+  if [ -L "$PTW_ARDUINO_BUILD_DIR" ]; then
+    echo "PTW_ARDUINO_BUILD_DIR must not be a symlink: $PTW_ARDUINO_BUILD_DIR" >&2
+    exit 2
+  fi
+
   if [ ! -d "$PTW_ARDUINO_BUILD_DIR" ] || [ ! -w "$PTW_ARDUINO_BUILD_DIR" ]; then
     echo "PTW_ARDUINO_BUILD_DIR must name an existing writable directory: $PTW_ARDUINO_BUILD_DIR" >&2
     exit 2

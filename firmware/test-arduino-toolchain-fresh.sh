@@ -65,6 +65,19 @@ if ! grep -qx 'caller sentinel' "$non_empty_build_directory/sentinel"; then
   exit 1
 fi
 
+symlink_target_directory="$PTW_ARDUINO_STATE_DIR/symlink-target-directory"
+mkdir "$symlink_target_directory"
+printf 'caller sentinel\n' > "$symlink_target_directory/sentinel"
+symlink_build_directory="$PTW_ARDUINO_STATE_DIR/symlink-build-directory"
+ln -s "$symlink_target_directory" "$symlink_build_directory"
+expect_precompile_rejection \
+  "Symlink build directory" \
+  env PTW_ARDUINO_BUILD_DIR="$symlink_build_directory" PATH="$path_without_arduino_cli" "$BASH" "$compile_wrapper"
+if ! grep -qx 'caller sentinel' "$symlink_target_directory/sentinel"; then
+  echo "Symlink build-directory rejection modified target caller data." >&2
+  exit 1
+fi
+
 unwritable_build_directory="$PTW_ARDUINO_STATE_DIR/unwritable-build-directory"
 mkdir "$unwritable_build_directory"
 chmod a-w "$unwritable_build_directory"
