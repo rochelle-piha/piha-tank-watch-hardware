@@ -31,6 +31,21 @@ RISC-V, DevKit/S3 Xtensa, and their matching libraries. It deliberately
 excludes S2/C5/C6/H2/P4 and other fallback payloads. A missing pinned artifact
 fails closed rather than causing Arduino CLI to download one.
 
+## Compile the reference firmware without a device
+
+The compile-only command uses the documented ESP32-C3 FQBN and never lists
+ports, uploads, or opens a serial monitor. Create a new, empty build directory
+yourself, then pass it explicitly:
+
+```bash
+build_dir="$(mktemp -d)"
+PTW_ARDUINO_BUILD_DIR="$build_dir" bash firmware/compile-firmware.sh
+```
+
+The command rejects an unset, missing, unwritable, or non-empty build directory
+so `--clean` cannot remove unrelated files. It writes the compiled binaries
+only under `PTW_ARDUINO_BUILD_DIR`.
+
 ## Flash a single device
 
 1. Connect the ESP32-C3 SuperMini to your computer via USB-C.
@@ -41,14 +56,16 @@ fails closed rather than causing Arduino CLI to download one.
    bash firmware/bootstrap-arduino-toolchain.sh
    ```
 
-3. Run the flash script:
+3. Create a new, empty build directory and run the flash script:
    ```bash
-   bash firmware/flash.sh
+   build_dir="$(mktemp -d)"
+   PTW_ARDUINO_BUILD_DIR="$build_dir" bash firmware/flash.sh
    ```
 
-   The script auto-detects the USB serial port, compiles the firmware, and
-   uploads it. It then opens the serial monitor so you can see the device ID
-   and confirm it's working:
+   The script first compiles into that caller-owned directory, then
+   auto-detects the USB serial port and uploads the compiled binary. It then
+   opens the serial monitor so you can see the device ID and confirm it's
+   working:
 
    ```
    Found device on /dev/cu.usbserial-...
@@ -77,9 +94,9 @@ arduino-cli board list
 Then compile and upload, replacing `PORT` with the detected port:
 
 ```bash
-./firmware/require-arduino-toolchain.sh
-arduino-cli compile --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc firmware/water_level
-arduino-cli upload  --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc --port PORT firmware/water_level
+build_dir="$(mktemp -d)"
+PTW_ARDUINO_BUILD_DIR="$build_dir" bash firmware/compile-firmware.sh
+arduino-cli upload --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc --port PORT --build-path "$build_dir"
 ```
 
 > **Keep the `:CDCOnBoot=cdc` on the FQBN.** The bare `esp32:esp32:esp32c3`
