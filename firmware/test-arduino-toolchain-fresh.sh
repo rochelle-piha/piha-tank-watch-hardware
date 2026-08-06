@@ -22,6 +22,61 @@ repo_root="$(git rev-parse --show-toplevel)"
 "$repo_root/firmware/bootstrap-arduino-toolchain.sh"
 "$repo_root/firmware/require-arduino-toolchain.sh"
 
+arduino_cli_dir="$(dirname "$(command -v arduino-cli)")"
+path_without_arduino_cli=":$PATH:"
+path_without_arduino_cli="${path_without_arduino_cli//:$arduino_cli_dir:/:}"
+path_without_arduino_cli="${path_without_arduino_cli#:}"
+path_without_arduino_cli="${path_without_arduino_cli%:}"
+
+expect_precompile_rejection() {
+  local description="$1"
+  shift
+  local output
+  local status
+
+  if output="$("$@" 2>&1)"; then
+    status=0
+  else
+    status=$?
+  fi
+
+  if [ "$status" -ne 2 ]; then
+    echo "$description must exit 2 before invoking arduino-cli (got $status): $output" >&2
+    exit 1
+  fi
+}
+
+compile_wrapper="$repo_root/firmware/compile-firmware.sh"
+expect_precompile_rejection \
+  "Unset build directory" \
+  env -u PTW_ARDUINO_BUILD_DIR PATH="$path_without_arduino_cli" "$BASH" "$compile_wrapper"
+expect_precompile_rejection \
+  "Missing build directory" \
+  env PTW_ARDUINO_BUILD_DIR="$PTW_ARDUINO_STATE_DIR/missing-build-directory" PATH="$path_without_arduino_cli" "$BASH" "$compile_wrapper"
+
+non_empty_build_directory="$PTW_ARDUINO_STATE_DIR/non-empty-build-directory"
+mkdir "$non_empty_build_directory"
+printf 'caller sentinel\n' > "$non_empty_build_directory/sentinel"
+expect_precompile_rejection \
+  "Non-empty build directory" \
+  env PTW_ARDUINO_BUILD_DIR="$non_empty_build_directory" PATH="$path_without_arduino_cli" "$BASH" "$compile_wrapper"
+if ! grep -qx 'caller sentinel' "$non_empty_build_directory/sentinel"; then
+  echo "Non-empty build-directory rejection modified caller data." >&2
+  exit 1
+fi
+
+unwritable_build_directory="$PTW_ARDUINO_STATE_DIR/unwritable-build-directory"
+mkdir "$unwritable_build_directory"
+chmod a-w "$unwritable_build_directory"
+if [ -w "$unwritable_build_directory" ]; then
+  echo "Skipping unwritable build-directory rejection: this environment cannot prove the fixture is unwritable." >&2
+else
+  expect_precompile_rejection \
+    "Unwritable build directory" \
+    env PTW_ARDUINO_BUILD_DIR="$unwritable_build_directory" PATH="$path_without_arduino_cli" "$BASH" "$compile_wrapper"
+fi
+chmod u+w "$unwritable_build_directory"
+
 export PTW_ARDUINO_BUILD_DIR="$PTW_ARDUINO_STATE_DIR/build-c3"
 mkdir "$PTW_ARDUINO_BUILD_DIR"
 "$repo_root/firmware/compile-firmware.sh"
