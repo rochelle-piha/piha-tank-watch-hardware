@@ -22,6 +22,10 @@ repo_root="$(git rev-parse --show-toplevel)"
 "$repo_root/firmware/bootstrap-arduino-toolchain.sh"
 "$repo_root/firmware/require-arduino-toolchain.sh"
 
+export PTW_ARDUINO_BUILD_DIR="$PTW_ARDUINO_STATE_DIR/build-c3"
+mkdir "$PTW_ARDUINO_BUILD_DIR"
+"$repo_root/firmware/compile-firmware.sh"
+
 compile_preset() {
   local name="$1"
   local fqbn="$2"
@@ -40,7 +44,6 @@ compile_preset() {
   arduino-cli compile "${args[@]}"
 }
 
-compile_preset c3 "esp32:esp32:esp32c3:CDCOnBoot=cdc"
 compile_preset devkit "esp32:esp32:esp32" BOARD_ESP32_DEVKIT
 compile_preset s3 "esp32:esp32:esp32s3" BOARD_ESP32S3
 

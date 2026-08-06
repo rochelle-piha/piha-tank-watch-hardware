@@ -52,7 +52,8 @@ Entering the shell does not install Arduino packages or mutate a cache.
 ```bash
 nix-shell
 bash firmware/bootstrap-arduino-toolchain.sh
-bash firmware/flash.sh
+build_dir="$(mktemp -d)"
+PTW_ARDUINO_BUILD_DIR="$build_dir" bash firmware/flash.sh
 ```
 
 See [docs/flashing.md](docs/flashing.md) for full instructions.

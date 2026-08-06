@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 LOCK_PATH = ROOT / "firmware" / "arduino-toolchain-lock.json"
 SHELL_PATH = ROOT / "shell.nix"
+COMPILE_SCRIPT = ROOT / "firmware" / "compile-firmware.sh"
 
 
 def fail(message: str) -> None:
@@ -120,9 +121,32 @@ def main() -> None:
 
     if (ROOT / "firmware" / "setup-arduino-toolchain.sh").exists():
         fail("legacy auto-install bootstrap still exists")
+
+    compile_script = COMPILE_SCRIPT.read_text()
+    for required in (
+        'readonly PTW_C3_FQBN="esp32:esp32:esp32c3:CDCOnBoot=cdc"',
+        "PTW_ARDUINO_BUILD_DIR",
+        "must be empty so --clean cannot remove caller data",
+        "--clean",
+        "--build-path \"$PTW_ARDUINO_BUILD_DIR\"",
+        '"$script_dir/require-arduino-toolchain.sh"',
+    ):
+        if required not in compile_script:
+            fail(f"compile-only wrapper no longer enforces {required!r}")
+    for forbidden in ("arduino-cli board list", "arduino-cli upload", "arduino-cli monitor"):
+        if forbidden in compile_script:
+            fail(f"compile-only wrapper must not run {forbidden!r}")
+
     for script in ("firmware/flash.sh", "firmware/flash_test.sh"):
-        if "require-arduino-toolchain.sh" not in (ROOT / script).read_text():
-            fail(f"{script} must verify the explicit pinned bootstrap")
+        text = (ROOT / script).read_text()
+        if "compile-firmware.sh" not in text or 'compile_firmware "$FQBN"' not in text:
+            fail(f"{script} must reuse the compile-only contract")
+        if '--build-path "$PTW_ARDUINO_BUILD_DIR"' not in text:
+            fail(f"{script} must upload the caller-owned compile output")
+
+    fresh_test = (ROOT / "firmware" / "test-arduino-toolchain-fresh.sh").read_text()
+    if '"$repo_root/firmware/compile-firmware.sh"' not in fresh_test:
+        fail("fresh-cache test must exercise the C3 compile-only wrapper")
 
     print("Pinned ESP32 C3, DevKit/WROOM and S3 toolchain lock and no-runtime-download boundary verified.")
 

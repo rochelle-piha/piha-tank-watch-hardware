@@ -131,6 +131,7 @@ pkgs.mkShell {
     pkgs.gcc
     pkgs.arduino-cli
     pkgs.python3
+    pkgs.shellcheck
   ];
 
   PTW_ARDUINO_TOOLCHAIN = toolchain;
