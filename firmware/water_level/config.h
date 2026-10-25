@@ -20,9 +20,9 @@
 // A staging build carries a "+staging" suffix so its readings are visibly
 // distinguishable from normal customer devices.
 #ifdef PTW_STAGING
-#define FIRMWARE_VERSION "1.1.0+staging"
+#define FIRMWARE_VERSION "1.1.1+staging"
 #else
-#define FIRMWARE_VERSION "1.1.0"
+#define FIRMWARE_VERSION "1.1.1"
 #endif
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -80,6 +80,8 @@
 // `next_interval_secs` (which it sets per plan tier). See applyServerInterval().
 #define READING_INTERVAL_MS 60000
 #define WIFI_RESET_HOLD_MS  5000
+// Allow an hour to enter WiFi details and complete the emailed-code setup.
+#define SETUP_PORTAL_TIMEOUT_MS (60UL * 60UL * 1000UL)
 
 // ── TLS / SNTP ───────────────────────────────────────────────────────────────
 // All device HTTPS calls validate the server cert against the embedded Amazon

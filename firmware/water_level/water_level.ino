@@ -417,6 +417,7 @@ static void runCaptivePortal() {
   dnsServer.start(53, "*", apIP);
 
   bool wifiSaved = false;
+  bool setupComplete = false;
 
   portalServer.on("/", HTTP_GET, [&]() {
     portalServer.send(200, "text/html", wifiSaved ? signinPage() : FPSTR(PORTAL_HTML));
@@ -537,10 +538,15 @@ static void runCaptivePortal() {
     http.addHeader("Content-Type", "application/json");
     http.addHeader("x-api-key", g_deviceId + ":" + g_secret);
     int status = http.POST("{\"email\":\"" + email + "\",\"otp\":\"" + otp + "\"}");
+    String responseBody = http.getString();
     http.end();
 
-    if (status == 200) {
+    JsonDocument linkResult;
+    DeserializationError linkError = deserializeJson(linkResult, responseBody);
+    bool linked = linkResult["linked"].is<bool>() && linkResult["linked"].as<bool>();
+    if (ptw_link_succeeded(status, !linkError, linked)) {
       portalServer.send(200, "text/html", donePage());
+      setupComplete = true;
     } else {
       portalServer.send(200, "text/html", codePage(email, "Invalid or expired code. Try again."));
     }
@@ -549,7 +555,7 @@ static void runCaptivePortal() {
   portalServer.begin();
 
   unsigned long start = millis();
-  while (millis() - start < 300000UL) {
+  while (ptw_setup_window_open(millis(), start, SETUP_PORTAL_TIMEOUT_MS, setupComplete)) {
     dnsServer.processNextRequest();
     portalServer.handleClient();
 
@@ -557,6 +563,8 @@ static void runCaptivePortal() {
     delay(10);
   }
 
+  // Give the completed page time to leave the socket before closing the AP.
+  if (setupComplete) delay(1000);
   dnsServer.stop();
   portalServer.stop();
   WiFi.softAPdisconnect(true);
