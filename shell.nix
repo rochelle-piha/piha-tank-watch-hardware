@@ -128,6 +128,8 @@ in
 pkgs.mkShell {
   packages = [
     pkgs.git
+    pkgs.gh
+    pkgs.jq
     pkgs.gcc
     pkgs.arduino-cli
     pkgs.python3
