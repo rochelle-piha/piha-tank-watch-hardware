@@ -7,6 +7,7 @@
 // reports (and how often) fail local checks on the host in seconds, without a
 // bench or the ESP32 toolchain.
 
+#include <stdint.h>
 #include <math.h>  // roundf — present on both host and Arduino
 //
 // The .ino keeps thin wrappers that own the hardware/side-effect halves
@@ -69,6 +70,17 @@ inline bool ptw_acquire_reading(NextPing next_ping, int count, int min_valid,
   float pings[16];
   for (int i = 0; i < count; i++) pings[i] = next_ping();
   return ptw_median_reading(pings, count, min_valid, lo, hi, out);
+}
+
+// Setup uses a 32-bit elapsed comparison, including across millis() rollover.
+inline bool ptw_setup_window_open(uint32_t now, uint32_t started,
+                                  uint32_t timeout_ms, bool complete) {
+  return !complete && static_cast<uint32_t>(now - started) < timeout_ms;
+}
+
+// The API can return HTTP 200 with linked:false for an incorrect/expired code.
+inline bool ptw_link_succeeded(int status, bool valid_json, bool linked) {
+  return status == 200 && valid_json && linked;
 }
 
 // ── Claim portal readiness ───────────────────────────────────────────────────

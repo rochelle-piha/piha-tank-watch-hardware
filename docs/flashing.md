@@ -144,3 +144,9 @@ See [wiring.md](wiring.md) for hardware connection details.
 | WiFi network doesn't appear | Device crashed or firmware not flashed | Check serial monitor; re-flash if needed |
 | Sensor reads `-1` or 0 | Wiring error or sensor out of range | Check TRIG/ECHO connections; minimum range is ~25 cm |
 | Device won't enter portal | WiFi credentials saved from previous attempt | Hold BOOT button for 5 seconds to clear credentials |
+
+### Setup window
+
+The setup WiFi network stays available for up to **60 minutes**, giving you time to enter your home WiFi details and verify the emailed code. Each email code still expires after 10 minutes; request a new code if needed. Successful account linking ends setup promptly so normal readings can begin. An incorrect or expired code keeps setup open for another attempt.
+
+The longer window requires firmware 1.1.1 or later on the device; a web-app deployment alone does not update this timer.
